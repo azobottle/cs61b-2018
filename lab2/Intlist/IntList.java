@@ -102,6 +102,7 @@ public class IntList {
             i.rest=new IntList(i.rest.first,i.rest.rest);
             i=i.rest;
         }
+        i.rest=B;
         return p;
     }
 
