@@ -1,27 +1,31 @@
 public class ArrayDeque <T>{
-    int size;
-    int first;
-    int last;
-    T []items;
+    private int size;
+    private int first;
+    private int last;
+    private T []items;
     public ArrayDeque(){
         items=(T[])new Object[9];
         size=0;
-        first=0;
+        first=1;
+        last=1;
     }
-    public ArrayDeque(ArrayDeque other){
+    /*public ArrayDeque(ArrayDeque other){
         T []items=(T[]) new Object[other.items.length];
         System.arraycopy(other.items,0,items,0,other.items.length);
         size=other.size;
         first=other.first;
         last=other.last;
-    }
-    public void resize(int capacity){
+    }*/
+    private void resize(int capacity){
         T []a=(T[])new Object[capacity];
         if(first>last){
             System.arraycopy(items,first,a,0,items.length-first+1);
             System.arraycopy(items,0,a,items.length-first+1,last+1);
         }else {
             System.arraycopy(items,first,a,0,size);
+        }
+        for (T t:items){
+            t=null;
         }
         items=a;
         first=0;
@@ -40,8 +44,8 @@ public class ArrayDeque <T>{
             resize(size*2);
         }
         size++;
-        last=(last+1+items.length)%items.length;
         items[last]=item;
+        last=(last+1+items.length)%items.length;
     }
     public boolean isEmpty(){
         return size==0;
@@ -60,6 +64,7 @@ public class ArrayDeque <T>{
         T t=items[first];
         items[first]=null;
         first=(first+1+items.length)%items.length;
+        size--;
         if(items.length>=17&&(double)size<0.25*(items.length-1)){
             resize(size/2);
         }
@@ -67,9 +72,10 @@ public class ArrayDeque <T>{
     }
     public T removeLast(){
         if (isEmpty()){return null;}
+        last=(last-1+items.length)%items.length;
         T t=items[last];
         items[last]=null;
-        last=(last-1+items.length)%items.length;
+        size--;
         if(items.length>=17&&(double)size<0.25*(items.length-1)){
             resize(size/2);
         }
