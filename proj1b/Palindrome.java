@@ -19,9 +19,8 @@ public class Palindrome {
     public boolean isPalindrome(String word, CharacterComparator cc){
         Deque a=wordToDeque(word);
         int t=word.length()/2;
-        CharacterComparator obo=new OffByOne();
         while (t--!=0){
-            if (!obo.equalChars((char)a.removeFirst(),(char)a.removeLast())){
+            if (!cc.equalChars((char)a.removeFirst(),(char)a.removeLast())){
                 return false;
             }
         }
