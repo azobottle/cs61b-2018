@@ -1,12 +1,7 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
 public interface Deque<T> {
-    void addFirst(T var1);
+    void addFirst(T item);
 
-    void addLast(T var1);
+    void addLast(T item);
 
     boolean isEmpty();
 
@@ -18,5 +13,5 @@ public interface Deque<T> {
 
     T removeLast();
 
-    T get(int var1);
+    T get(int item);
 }
