@@ -17,11 +17,11 @@ public class LinkedListDeque<T> {
     }
     private int size=0;
     private node sentinel=null;
-    LinkedListDeque(){
+    public LinkedListDeque(){
         sentinel=new node(null,null,null);
         sentinel.next=sentinel.pre=sentinel;
     }
-    LinkedListDeque(LinkedListDeque o){
+    public LinkedListDeque(LinkedListDeque o){
         sentinel=new node(null,null,null);
         sentinel.next=sentinel.pre=sentinel;
         node t=o.sentinel.next;
@@ -77,6 +77,7 @@ public class LinkedListDeque<T> {
         node t=sentinel.next;
         while (index>0){
             t=t.next;
+            index--;
         }
         return t.data;
     }
