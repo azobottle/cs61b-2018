@@ -19,8 +19,8 @@ public class ArrayDeque <T>{
     private void resize(int capacity){
         T []a=(T[])new Object[capacity];
         if(first>last){
-            System.arraycopy(items,first,a,0,items.length-first+1);
-            System.arraycopy(items,0,a,items.length-first+1,last+1);
+            System.arraycopy(items,first,a,0,items.length-first);
+            System.arraycopy(items,0,a,items.length-first,last);
         }else {
             System.arraycopy(items,first,a,0,size);
         }
@@ -29,7 +29,7 @@ public class ArrayDeque <T>{
         }
         items=a;
         first=0;
-        last=size-1;
+        last=size;
     }
     public void addFirst(T item){
         if(size==items.length-1) {
