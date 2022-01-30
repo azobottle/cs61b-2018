@@ -1,32 +1,27 @@
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 public class TestPalindrome {
-    // You must use this palindrome, and not instantiate
-    // new Palindromes, or the autograder might be upset.
     static Palindrome palindrome = new Palindrome();
 
-    @Test
+    @org.junit.Test
     public void testWordToDeque() {
         Deque d = palindrome.wordToDeque("persiflage");
         String actual = "";
         for (int i = 0; i < "persiflage".length(); i++) {
             actual += d.removeFirst();
         }
-        assertEquals("persiflage", actual);
-    } //Uncomment this class once you've created your Palindrome class. */
-    @Test
+        org.junit.Assert.assertEquals("persiflage", actual);
+    }
+    @org.junit.Test
     public void testisPalindrome() {
         CharacterComparator obo = new OffByOne();
         CharacterComparator obn = new OffByN(5);
-        assertTrue(palindrome.isPalindrome(""));
-        assertTrue(palindrome.isPalindrome(""));
-        assertFalse(palindrome.isPalindrome("abc"));
-        assertTrue(palindrome.isPalindrome("121"));
-        assertTrue(palindrome.isPalindrome("", obo));
-        assertTrue(palindrome.isPalindrome("1", obo));
-        assertFalse(palindrome.isPalindrome("121", obo));
-        assertTrue(palindrome.isPalindrome("acb", obo));
-        assertTrue(palindrome.isPalindrome("binding", obn));
+        org.junit.Assert.assertTrue(palindrome.isPalindrome(""));
+        org.junit.Assert.assertTrue(palindrome.isPalindrome(""));
+        org.junit.Assert.assertFalse(palindrome.isPalindrome("abc"));
+        org.junit.Assert.assertTrue(palindrome.isPalindrome("121"));
+        org.junit.Assert.assertTrue(palindrome.isPalindrome("", obo));
+        org.junit.Assert.assertTrue(palindrome.isPalindrome("1", obo));
+        org.junit.Assert.assertFalse(palindrome.isPalindrome("121", obo));
+        org.junit.Assert.assertTrue(palindrome.isPalindrome("acb", obo));
+        org.junit.Assert.assertTrue(palindrome.isPalindrome("binding", obn));
     }
 }
