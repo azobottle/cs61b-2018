@@ -1,11 +1,11 @@
-import org.junit.Test;
-import static org.junit.Assert.*;
+//import org.junit.Test;
+//import static org.junit.Assert.*;
 
 public class TestOffByOne {
-    @Test
+    @org.junit.Test
     public void testOffByOne() {
         CharacterComparator obo = new OffByOne();
-        assertTrue(obo.equalChars('a', 'b'));
-        assertFalse(obo.equalChars('a', 'a'));
+        org.junit.Assert.assertTrue(obo.equalChars('a', 'b'));
+        org.junit.Assert.assertFalse(obo.equalChars('a', 'a'));
     }
 }
