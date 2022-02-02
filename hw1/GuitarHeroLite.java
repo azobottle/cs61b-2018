@@ -16,28 +16,31 @@ public class GuitarHeroLite {
         }
         synthesizer.GuitarString stringA = new synthesizer.GuitarString(CONCERT_A);
         synthesizer.GuitarString stringC = new synthesizer.GuitarString(CONCERT_C);
-
         while (true) {
 
             /* check if the user has typed a key; if so, process it */
             if (StdDraw.hasNextKeyTyped()) {
                 char key = StdDraw.nextKeyTyped();
-                if (keyboard.indexOf(key) >= 0) {
+                int idx = keyboard.indexOf(key);
+                if (idx >= 0) {
+                    strings[idx].pluck();
 
                 } else {
                     continue;
                 }
             }
-
             /* compute the superposition of samples */
-            double sample = stringA.sample() + stringC.sample();
-
+            double sample = 0;
+            for (int i = 0; i < strings.length; i++) {
+                sample += strings[i].sample();
+            }
             /* play the sample on standard audio */
             StdAudio.play(sample);
 
             /* advance the simulation of each guitar string by one step */
-            stringA.tic();
-            stringC.tic();
+            for (int i = 0; i < strings.length; i++) {
+                strings[i].tic();
+            }
         }
     }
 }
