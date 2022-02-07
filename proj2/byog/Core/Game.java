@@ -4,16 +4,17 @@ import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 
-import java.util.Collection;
+import javax.swing.text.Position;
+import java.util.Arrays;
 import java.util.Random;
-import java.util.ArrayList;
 
 public class Game {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
-    private ArrayList<Room> ROOMS = new ArrayList<>();
+    private Room[] ROOMS = new Room[100];
+    private Integer ROOM_NUM = 0;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -41,16 +42,23 @@ public class Game {
         // drawn if the same inputs had been given to playWithKeyboard().
         long seed = Long.parseLong(input);
         Random ran = new Random(seed);
-        int r_n = RandomUtils.uniform(ran, 10, 50);
+        int r_n = RandomUtils.uniform(ran, 10, 30);
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
         initialize(finalWorldFrame);
-        drawRooms(r_n, ran, finalWorldFrame);
-        drawHallWays(r_n, ran, finalWorldFrame);
+        //drawRooms(r_n, ran, finalWorldFrame);
+        ROOMS[ROOM_NUM++] = new Room(new Room.Position(9, 9), 7, 5);
+        ROOMS[ROOM_NUM++] = new Room(new Room.Position(27, 10), 7, 4);
+        draw_set(finalWorldFrame);
+        Room.drawInfo Info = Room.Drawhallwayable(ROOMS[0], ROOMS[1], finalWorldFrame, ran);
+        drawHorizontalHallWay(Info, finalWorldFrame);
+
+        //drawHallWays(r_n, ran, finalWorldFrame);
         return finalWorldFrame;
     }
 
     private void draw_set(TETile[][] world) {
-        for (Room r : ROOMS) {
+        for (int t = 0; t < ROOM_NUM; t++) {
+            Room r = ROOMS[t];
             for (int i = r.pos.xP; i < r.pos.xP + r.width; i++) {
                 world[i][r.pos.yP] = Tileset.WALL;
                 world[i][r.pos.yP + r.height - 1] = Tileset.WALL;
@@ -68,30 +76,53 @@ public class Game {
     }
 
     private void drawRooms(int r_n, Random ran, TETile[][] world) {
-        while (r_n != 0) {
+
+        while (ROOM_NUM != r_n) {
             Room current_room = new Room(ran);
             if (!Room.Screen_OverBound(current_room, WIDTH, HEIGHT) &&
-                    !Room.OverLap(current_room, ROOMS)) {
-                ROOMS.add(current_room);
-                r_n--;
+                    !Room.OverLap(current_room, ROOMS, ROOM_NUM)) {
+                ROOMS[ROOM_NUM] = current_room;
+                ROOM_NUM++;
             }
         }
         draw_set(world);
     }
 
     private void drawHallWays(int r_n, Random ran, TETile[][] world) {
-        drawLHallWay(r_n, ROOMS.get(0));
+        Room[] trooms = new Room[r_n];
+        System.arraycopy(ROOMS, 0, trooms, 0, r_n);
+        drawLHallWay(r_n, ROOMS[0]);
         for (int i = 0; i < r_n; i++) {
-
+            RandomUtils.shuffle(ran, ROOMS, 0, ROOM_NUM);
+            for (int j = 0; j < ROOM_NUM && j != i; j++) {
+                Room.drawInfo Info = Room.Drawhallwayable(ROOMS[i], ROOMS[j], world, ran);
+                if (Info.drawable) {
+                    if (Info.vertical) {
+                        drawVerticalHallWay(Info, world);
+                    } else {
+                        drawHorizontalHallWay(Info, world);
+                    }
+                }
+            }
         }
     }
 
-    private void drawVerticalHallWay() {
-
+    private void drawVerticalHallWay(Room.drawInfo Info, TETile[][] world) {
+        ROOMS[ROOM_NUM++] = new Room(new Room.Position(Info.t, Info.a), 3, Info.b - Info.a + 1);
+        for (int i = Info.a - 1; i <= Info.b + 1; i++) {
+            world[Info.t][i] = Tileset.WALL;
+            world[Info.t + 1][i] = Tileset.FLOOR;
+            world[Info.t + 2][i] = Tileset.WALL;
+        }
     }
 
-    private void drawHorizontalHallWay() {
-
+    private void drawHorizontalHallWay(Room.drawInfo Info, TETile[][] world) {
+        ROOMS[ROOM_NUM++] = new Room(new Room.Position(Info.a, Info.t), Info.b - Info.a + 1, 3);
+        for (int i = Info.a - 1; i <= Info.b + 1; i++) {//9 9 7 5  27 10 7 4
+            world[i][Info.t] = Tileset.WALL;
+            world[i][Info.t + 1] = Tileset.FLOOR;
+            world[i][Info.t + 2] = Tileset.WALL;
+        }
     }
 
     private void drawCorner() {
@@ -99,12 +130,12 @@ public class Game {
     }
 
     private void drawLHallWay(int r_n, Room r) {
-        for (int i = 0; i < r_n && ROOMS.get(i) != r; i++) {
+        for (int i = 0; i < r_n && ROOMS[i] != r; i++) {
 
         }
     }
 
-    public void initialize(TETile[][] tiles) {
+    public static void initialize(TETile[][] tiles) {
         int height = tiles[0].length;
         int width = tiles.length;
         for (int x = 0; x < width; x += 1) {
@@ -114,14 +145,10 @@ public class Game {
         }
     }
 
-    private static class Room {
+    private class Room {
         private static class Position {
             int xP;
             int yP;
-
-            Position() {
-
-            }
 
             Position(int x, int y) {
                 xP = x;
@@ -131,7 +158,7 @@ public class Game {
 
         private static class drawInfo {
             boolean drawable;
-            boolean vertical;
+            boolean vertical;//垂直与否
             int t;
             int a, b;
 
@@ -149,13 +176,12 @@ public class Game {
             }
         }
 
-        Position pos = new Position();
+        Position pos;
         int width;
         int height;
 
         Room(Random r) {
-            pos.xP = RandomUtils.uniform(r, WIDTH - 3);
-            pos.yP = RandomUtils.uniform(r, HEIGHT - 3);
+            pos = new Position(RandomUtils.uniform(r, WIDTH - 3), RandomUtils.uniform(r, HEIGHT - 3));
             width = RandomUtils.uniform(r, 3, 9);
             height = RandomUtils.uniform(r, 3, 9);
         }
@@ -166,7 +192,7 @@ public class Game {
             height = h;
         }
 
-        public static drawInfo Drawable(Room r1, Room r2, TETile[][] world, Random ran) {
+        public static drawInfo Drawhallwayable(Room r1, Room r2, TETile[][] world, Random ran) {
             int xl1 = r1.pos.xP;
             int xr1 = r1.pos.xP + r1.width - 1;
             int yd1 = r1.pos.yP;
@@ -205,17 +231,17 @@ public class Game {
                 b = Math.min(yu1, yu2);//求y轴上的交集
                 t = RandomUtils.uniform(ran, a, b - 1);//水平hallway的下端
                 if (xl1 < xl2) {
-                    c = xl1 + 1;
+                    c = xr1 + 1;
                     d = xl2 - 1;
                 } else {
-                    c = xl2 - 1;
+                    c = xr2 - 1;
                     d = xl1 - 1;
                 }
                 boolean flag = true;
                 for (int i = c; i <= d; i++) {
                     if (world[i][t] != Tileset.NOTHING || world[i][t + 2] != Tileset.NOTHING) {
                         flag = false;
-                        break;
+                        break;//9 9 7 5  27 10 7 4
                     }
                 }
                 if (flag) {
@@ -228,12 +254,14 @@ public class Game {
             }
         }
 
-        public static boolean OverLap(Room r1, Collection<Room> rooms) {
+        public static boolean OverLap(Room r1, Room[] rooms, int r_n) {
             int xl1 = r1.pos.xP;
             int xr1 = r1.pos.xP + r1.width - 1;
             int yd1 = r1.pos.yP;
             int yu1 = r1.pos.yP + r1.height - 1;
-            for (Room r : rooms) {
+
+            for (int i = 0; i < r_n; i++) {
+                Room r = rooms[i];
                 int xl2 = r.pos.xP;
                 int xr2 = r.pos.xP + r.width - 1;
                 int yd2 = r.pos.yP;
