@@ -45,14 +45,8 @@ public class Game {
         int r_n = RandomUtils.uniform(ran, 10, 30);
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
         initialize(finalWorldFrame);
-        //drawRooms(r_n, ran, finalWorldFrame);
-        ROOMS[ROOM_NUM++] = new Room(new Room.Position(9, 9), 7, 5);
-        ROOMS[ROOM_NUM++] = new Room(new Room.Position(27, 10), 7, 4);
-        draw_set(finalWorldFrame);
-        Room.drawInfo Info = Room.Drawhallwayable(ROOMS[0], ROOMS[1], finalWorldFrame, ran);
-        drawHorizontalHallWay(Info, finalWorldFrame);
-
-        //drawHallWays(r_n, ran, finalWorldFrame);
+        drawRooms(r_n, ran, finalWorldFrame);
+        drawHallWays(r_n, ran, finalWorldFrame);
         return finalWorldFrame;
     }
 
@@ -91,17 +85,18 @@ public class Game {
     private void drawHallWays(int r_n, Random ran, TETile[][] world) {
         Room[] trooms = new Room[r_n];
         System.arraycopy(ROOMS, 0, trooms, 0, r_n);
-        drawLHallWay(r_n, ROOMS[0]);
+        //drawLHallWay(r_n, ROOMS[0]);
         for (int i = 0; i < r_n; i++) {
             RandomUtils.shuffle(ran, ROOMS, 0, ROOM_NUM);
-            for (int j = 0; j < ROOM_NUM && j != i; j++) {
-                Room.drawInfo Info = Room.Drawhallwayable(ROOMS[i], ROOMS[j], world, ran);
+            for (int j = 0; j < ROOM_NUM && ROOMS[j] != trooms[i]; j++) {
+                Room.drawInfo Info = Room.Drawhallwayable(trooms[i], ROOMS[j], world, ran);
                 if (Info.drawable) {
                     if (Info.vertical) {
                         drawVerticalHallWay(Info, world);
                     } else {
                         drawHorizontalHallWay(Info, world);
                     }
+                    break;
                 }
             }
         }
