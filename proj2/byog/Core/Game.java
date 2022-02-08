@@ -1,5 +1,6 @@
 package byog.Core;
 
+import byog.SaveDemo.World;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
@@ -158,10 +159,10 @@ public class Game {
     }
 
     private void drawHallWays(Random ran, TETile[][] world) {
+
         for (int i = 0; i < ROOM_NUM - 1; i++) {
             Room hallway = calDrawInfo(ROOMS[i], ROOMS[i + 1], ran);
             drawAHallWay(hallway, world);
-
         }
     }
 
@@ -283,7 +284,6 @@ public class Game {
             }
         }
     }
-
 
     private void drawCorner(Room.Position p, TETile[][] world) {
         for (int i = 0; i < 3; i++) {
