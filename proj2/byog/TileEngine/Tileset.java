@@ -1,22 +1,23 @@
 package byog.TileEngine;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 /**
  * Contains constant tile objects, to avoid having to remake the same tiles in different parts of
  * the code.
- *
+ * <p>
  * You are free to (and encouraged to) create and add your own tiles to this file. This file will
  * be turned in with the rest of your code.
- *
+ * <p>
  * Ex:
- *      world[x][y] = Tileset.FLOOR;
- *
+ * world[x][y] = Tileset.FLOOR;
+ * <p>
  * The style checker may crash when you try to style check this file due to use of unicode
  * characters. This is OK.
  */
 
-public class Tileset {
+public class Tileset implements Serializable {
     public static final TETile PLAYER = new TETile('@', Color.white, Color.black, "player");
     public static final TETile WALL = new TETile('#', new Color(216, 128, 128), Color.darkGray,
             "wall");
