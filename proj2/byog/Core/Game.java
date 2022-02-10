@@ -1,28 +1,17 @@
 package byog.Core;
 
-import byog.SaveDemo.World;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
+import edu.princeton.cs.introcs.StdDraw;
 
+import java.awt.*;
+import java.io.*;
 import java.util.Random;
 
-public class Game {
-    private static class Room {
-        private static class Position {
-            int xP;
-            int yP;
+public class Game implements Serializable {
+    private class Room implements Serializable {
 
-            Position() {
-            }
-
-            ;
-
-            Position(int x, int y) {
-                xP = x;
-                yP = y;
-            }
-        }
 
         Position pos;
         int width;
@@ -67,18 +56,185 @@ public class Game {
         }
     }
 
+    private class Position implements Serializable {
+        int xP;
+        int yP;
+
+        Position() {
+        }
+
+        Position(int x, int y) {
+            xP = x;
+            yP = y;
+        }
+    }
+
+    private class Entity implements Serializable {
+        int x, y;
+        TETile shape = Tileset.PLAYER;
+
+        Entity() {
+        }
+
+        Entity(Random ran, TETile[][] world, int w, int h) {
+            while (true) {
+                int x = RandomUtils.uniform(ran, w);
+                int y = RandomUtils.uniform(ran, h);
+                if (world[x][y] == Tileset.FLOOR) {
+                    this.x = x;
+                    this.y = y;
+                    world[x][y] = shape;
+                    break;
+                }
+            }
+        }
+
+        private void move(char c) {
+            switch (c) {
+                case 'w':
+                    if (!WORLD[x][y + 1].description().equals(Tileset.WALL.description())) {
+                        WORLD[x][y] = Tileset.FLOOR;
+                        WORLD[x][++y] = shape;
+                    }
+                    break;
+                case 's':
+                    if (!WORLD[x][y - 1].description().equals(Tileset.WALL.description())) {
+                        WORLD[x][y] = Tileset.FLOOR;
+                        WORLD[x][--y] = shape;
+                    }
+                    break;
+                case 'a':
+                    if (!WORLD[x - 1][y].description().equals(Tileset.WALL.description())) {
+                        WORLD[x][y] = Tileset.FLOOR;
+                        WORLD[--x][y] = shape;
+                    }
+                    break;
+                case 'd':
+                    if (!WORLD[x + 1][y].description().equals(Tileset.WALL.description())) {
+                        WORLD[x][y] = Tileset.FLOOR;
+                        WORLD[++x][y] = shape;
+                    }
+                    break;
+            }
+        }
+    }
+
 
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
-    private Room[] ROOMS = new Room[100];
+    public static final int MAX = 30;//MAX>=30
+    private Room[] ROOMS = new Room[MAX];
     private Integer ROOM_NUM = 0;
+    private TETile[][] WORLD = new TETile[WIDTH][HEIGHT];
+    private Entity e;
+
+    private Game(Random ran) {
+        int r_n = RandomUtils.uniform(ran, MAX - 20, MAX);
+        worldInit();
+        drawRooms(r_n, ran);
+        drawHallWays(ran);
+        //e = new Entity(ran, WORLD, WIDTH, HEIGHT);
+    }
+
+    private Game() {
+        Random ran = new Random();
+        new Game(ran);
+    }
+
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
-    public void playWithKeyboard() {
+    public static void playWithKeyboard() {
+        Game.drawmenu();
+        boolean f = false;
+        Game game = null;
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
+                c = Character.toLowerCase(c);
+                switch (c) {
+                    case 'n':
+                        if (!f) {
+                            long seed;
+                            StringBuffer sb = new StringBuffer();
+                            drawframe("please enter your seed(end with s)");
+                            while (true) {
+                                if (StdDraw.hasNextKeyTyped()) {
+                                    char cc = StdDraw.nextKeyTyped();
+                                    if ("0123456789".indexOf(cc) >= 0) {
+                                        sb.append(cc);
+                                        drawframe("please enter your seed(end with s)", new String(sb));
+                                    } else {
+                                        seed = Long.parseLong(new String(sb));
+                                        game = new Game(new Random(seed));
+                                        StdDraw.pause(500);
+                                        game.ter.renderFrame(game.WORLD);
+                                        f = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case 'l':
+                        if (!f) {
+                            game = loadGame();
+                        }
+                        break;
+                    case 'q':
+                        if (f) {
+                            saveGame(game);
+                        }
+                        break;
+                    default:
+                        if ("wsad".indexOf(c) >= 0) {
+                            game.e.move(c);
+                            game.ter.renderFrame(game.WORLD);
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
+    private static void drawmenu() {
+        int midwidth = WIDTH / 2;
+        int midheight = HEIGHT / 2;
+        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+        Font bigfont = new Font("Monaco", Font.BOLD, 30);
+        Font smallfont = new Font("Monaco", Font.BOLD, 20);
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.setFont(bigfont);
+        StdDraw.setXscale(0, WIDTH);
+        StdDraw.setYscale(0, HEIGHT);
+        StdDraw.clear(Color.BLACK);
+        StdDraw.enableDoubleBuffering();
+        StdDraw.text(midwidth, HEIGHT - 1, "CS61B THE GAME");
+        StdDraw.setFont(smallfont);
+        StdDraw.text(midwidth, midheight + 1, "New Game (N)");
+        StdDraw.text(midwidth, midheight, "Load Game (L)");
+        StdDraw.text(midwidth, midheight - 1, "Quit Game (Q)");
+        StdDraw.show();
+    }
+
+    private static void drawframe(String s) {
+        StdDraw.clear(Color.BLACK);
+        Font bigfont = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(bigfont);
+        StdDraw.text(WIDTH / 2, HEIGHT / 2, s);
+        StdDraw.show();
+    }
+
+    private static void drawframe(String s1, String s2) {
+        StdDraw.clear(Color.BLACK);
+        Font bigfont = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(bigfont);
+        StdDraw.text(WIDTH / 2, HEIGHT / 2 + 1, s1);
+        StdDraw.text(WIDTH / 2, HEIGHT / 2 - 1, s2);
+        StdDraw.show();
     }
 
     /**
@@ -95,33 +251,48 @@ public class Game {
      * @return the 2D TETile[][] representing the state of the world
      */
 
-    public TETile[][] playWithInputString(String input) {
+    public static TETile[][] playWithInputString(String input) {
         // TODO: Fill out this method to run the game using the input passed in,
         // and return a 2D tile representation of the world that would have been
         // drawn if the same inputs had been given to playWithKeyboard().
-        long seed = Long.parseLong(input);
-        Random ran = new Random(seed);
-        int r_n = RandomUtils.uniform(ran, 10, 30);
-        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
-        worldInit(finalWorldFrame);
-        drawRooms(r_n, ran, finalWorldFrame);
-        drawHallWays(ran, finalWorldFrame);
-        /*ROOMS[ROOM_NUM++] = new Room(new Room.Position(9, 9), 7, 5);
-        ROOMS[ROOM_NUM++] = new Room(new Room.Position(27, 10), 7, 4);
-        ROOMS[ROOM_NUM++] = new Room(new Room.Position(20, 2), 6, 8);
-        draw_set(finalWorldFrame);
-        drawHallWays(ran, finalWorldFrame);
-*/
+        input = input.toLowerCase();
+        Game game = null;
+        int i = 1;
+        if (input.charAt(0) == 'n') {
+            long seed;
+            char[] a = new char[input.length()];
+            while (i < input.length()) {
+                char c = input.charAt(i);
+                if ("0123456789".indexOf(c) >= 0) {
+                    a[i++] = c;
+                } else {
+                    seed = Long.parseLong(String.valueOf(a, 1, i - 1));
+                    i++;
+                    Random ran = new Random(seed);
+                    game = new Game(ran);
+                    break;
+                }
+            }
+        } else {
+            game = loadGame();
+        }
+        while (i < input.length()) {
+            game.e.move(input.charAt(i++));
+        }
+        if (input.charAt(i - 1) == 'q') {
+            saveGame(game);
+        }
 
-        return finalWorldFrame;
+
+        return game.WORLD;
     }
 
-    public static void worldInit(TETile[][] tiles) {
-        int height = tiles[0].length;
-        int width = tiles.length;
+    public void worldInit() {
+        int height = WORLD[0].length;
+        int width = WORLD.length;
         for (int x = 0; x < width; x += 1) {
             for (int y = 0; y < height; y += 1) {
-                tiles[x][y] = Tileset.NOTHING;
+                WORLD[x][y] = Tileset.NOTHING;
             }
         }
     }
@@ -145,7 +316,7 @@ public class Game {
         }
     }
 
-    private void drawRooms(int r_n, Random ran, TETile[][] world) {
+    private void drawRooms(int r_n, Random ran) {
 
         while (ROOM_NUM != r_n) {
             Room current_room = new Room(ran);
@@ -155,18 +326,28 @@ public class Game {
                 ROOM_NUM++;
             }
         }
-        draw_set(world);
+        draw_set(WORLD);
     }
 
-    private void drawHallWays(Random ran, TETile[][] world) {
+    private void drawHallWays(Random ran) {
+        Room[] rooms = new Room[MAX * 2];
+        rooms[0] = new Room(new Position(), ROOM_NUM, 0);
+        System.arraycopy(ROOMS, 0, rooms, 1, ROOM_NUM);
+        for (int i = 0; i < ROOM_NUM; i++) {
 
-        for (int i = 0; i < ROOM_NUM - 1; i++) {
-            Room hallway = calDrawInfo(ROOMS[i], ROOMS[i + 1], ran);
-            drawAHallWay(hallway, world);
+            for (int j = 1; j < rooms[0].width + 1; j++) {
+                if (rooms[j] != ROOMS[i]) {
+                    Room hallway = calDrawInfo(ROOMS[i], rooms[j], ran);
+                    if (drawable(hallway, rooms, true)) {
+                        drawAHallWay(hallway);
+                        break;
+                    }
+                }
+            }
         }
     }
 
-    public static Room calDrawInfo(Room r1, Room r2, Random ran) {//27 10 7 4,20 2 6 8
+    public Room calDrawInfo(Room r1, Room r2, Random ran) {//27 10 7 4,20 2 6 8
         int xl1 = r1.pos.xP;
         int xr1 = r1.pos.xP + r1.width - 1;
         int yd1 = r1.pos.yP;
@@ -185,10 +366,10 @@ public class Game {
                 y = yu1 + 1;
                 h = yd2 - yu1 - 1;
             } else {
-                y = yu2 - 1;
+                y = yu2 + 1;
                 h = yd1 - yu2 - 1;
             }
-            return new Room(new Room.Position(x, y), -3, h);
+            return new Room(new Position(x, y), -3, h);
         } else if (yd1 + 1 < yu2 && yu1 - 1 > yd2) {
             int a, b;
             a = Math.max(yd1, yd2);
@@ -198,10 +379,10 @@ public class Game {
                 x = xr1 + 1;
                 w = xl2 - xr1 - 1;
             } else {
-                x = xr2 - 1;
+                x = xr2 + 1;
                 w = xl1 - xr2 - 1;
             }
-            return new Room(new Room.Position(x, y), w, -3);
+            return new Room(new Position(x, y), w, -3);
         } else {
             if (RandomUtils.bernoulli(ran)) {
                 x = RandomUtils.uniform(ran, xl2, xr2 - 1);
@@ -236,67 +417,176 @@ public class Game {
                 }
 
             }
-            return new Room(new Room.Position(x, y), w, h);
+            return new Room(new Position(x, y), w, h);
         }
     }
 
-    private void drawAHallWay(Room hw, TETile[][] world) {
+    private void drawAHallWay(Room hw) {
         int xP, yP, w, h;
         xP = hw.pos.xP;
         yP = hw.pos.yP;
         w = hw.width;
         h = hw.height;
         if (!(w == -3 || h == -3)) {
-            drawCorner(new Room.Position(Math.abs(xP), Math.abs(yP)), world);
+            drawCorner(new Position(Math.abs(xP), Math.abs(yP)));
             if (xP < 0) {
                 xP = -xP;
-                drawAHallWay(new Room(new Room.Position(xP - w, Math.abs(yP)), w, -3), world);
+                drawAHallWay(new Room(new Position(xP - w, Math.abs(yP)), w, -3));
             } else {
-                drawAHallWay(new Room(new Room.Position(xP + 3, Math.abs(yP)), w, -3), world);
+                drawAHallWay(new Room(new Position(xP + 3, Math.abs(yP)), w, -3));
             }
             if (yP < 0) {
                 yP = -yP;
-                drawAHallWay(new Room(new Room.Position(Math.abs(xP), yP - h), -3, h), world);
+                drawAHallWay(new Room(new Position(Math.abs(xP), yP - h), -3, h));
             } else {
-                drawAHallWay(new Room(new Room.Position(Math.abs(xP), yP + 3), -3, h), world);
+                drawAHallWay(new Room(new Position(Math.abs(xP), yP + 3), -3, h));
             }
         } else {
             if (w == -3) {
-                for (int i = yP - 1; i <= yP + h; i++) {//9 9 7 5  27 10 7 4
-                    if (world[xP][i] != Tileset.FLOOR) {
-                        world[xP][i] = Tileset.WALL;
+                for (int i = yP - 1; i <= yP + h; i++) {
+                    if (WORLD[xP][i] != Tileset.FLOOR) {
+                        WORLD[xP][i] = Tileset.WALL;
                     }
-                    world[xP + 1][i] = Tileset.FLOOR;
-                    if (world[xP + 2][i] != Tileset.FLOOR) {
-                        world[xP + 2][i] = Tileset.WALL;
+                    WORLD[xP + 1][i] = Tileset.FLOOR;
+                    if (WORLD[xP + 2][i] != Tileset.FLOOR) {
+                        WORLD[xP + 2][i] = Tileset.WALL;
                     }
                 }
             } else {
                 for (int i = xP - 1; i <= xP + w; i++) {
-                    if (world[i][yP] != Tileset.FLOOR) {
-                        world[i][yP] = Tileset.WALL;
+                    if (WORLD[i][yP] != Tileset.FLOOR) {
+                        WORLD[i][yP] = Tileset.WALL;
                     }
-                    world[i][yP + 1] = Tileset.FLOOR;
-                    if (world[i][yP + 2] != Tileset.FLOOR) {
-                        world[i][yP + 2] = Tileset.WALL;
+                    WORLD[i][yP + 1] = Tileset.FLOOR;
+                    if (WORLD[i][yP + 2] != Tileset.FLOOR) {
+                        WORLD[i][yP + 2] = Tileset.WALL;
                     }
                 }
             }
         }
     }
 
-    private void drawCorner(Room.Position p, TETile[][] world) {
+    private void drawCorner(Position p) {
         for (int i = 0; i < 3; i++) {
-            if (world[p.xP + i][p.yP] != Tileset.FLOOR) {
-                world[p.xP + i][p.yP] = Tileset.WALL;
+            if (WORLD[p.xP + i][p.yP] != Tileset.FLOOR) {
+                WORLD[p.xP + i][p.yP] = Tileset.WALL;
             }
-            if (world[p.xP + i][p.yP + 1] != Tileset.FLOOR) {
-                world[p.xP + i][p.yP + 1] = Tileset.WALL;
+            if (WORLD[p.xP + i][p.yP + 1] != Tileset.FLOOR) {
+                WORLD[p.xP + i][p.yP + 1] = Tileset.WALL;
             }
-            if (world[p.xP + i][p.yP + 2] != Tileset.FLOOR) {
-                world[p.xP + i][p.yP + 2] = Tileset.WALL;
+            if (WORLD[p.xP + i][p.yP + 2] != Tileset.FLOOR) {
+                WORLD[p.xP + i][p.yP + 2] = Tileset.WALL;
             }
         }
-        world[p.xP + 1][p.yP + 1] = Tileset.FLOOR;
+        WORLD[p.xP + 1][p.yP + 1] = Tileset.FLOOR;
+    }
+
+    private boolean drawable(Room hw, Room[] rooms, boolean f) {
+        int xP, yP, w, h;
+        xP = hw.pos.xP;
+        yP = hw.pos.yP;
+        w = hw.width;
+        h = hw.height;
+        if (!(w == -3 || h == -3)) {
+            boolean f1, f2;
+            Room[] hws = new Room[3];
+            if (xP < 0) {
+                xP = -xP;
+                hws[0] = new Room(new Position(xP - w, Math.abs(yP)), w, -3);
+            } else {
+                hws[0] = new Room(new Position(xP + 3, Math.abs(yP)), w, -3);
+            }
+            f1 = drawable(hws[0], rooms, false);
+            if (yP < 0) {
+                yP = -yP;
+                hws[1] = new Room(new Position(Math.abs(xP), yP - h), -3, h);
+            } else {
+                hws[1] = new Room(new Position(Math.abs(xP), yP + 3), -3, h);
+            }
+            f2 = drawable(hws[1], rooms, false);
+            if (f1 && f2) {
+                hws[0].height = 3;
+                hws[1].width = 3;
+                hws[2] = new Room(new Position(Math.abs(xP), Math.abs(yP)), 3, 3);
+                for (int i = 0; i < 3; i++) {
+                    if (hws[i].width >= 3 && hws[i].height >= 3) {
+                        rooms[rooms[0].width + 1] = hws[i];
+                        rooms[0].width++;
+                    }
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            if (w == -3 && h >= 0) {
+                for (int i = yP; i < yP + h; i++) {
+                    if (WORLD[xP + 1][i] != Tileset.NOTHING) {
+                        return false;
+                    }
+                }
+                if (f && h >= 3) {
+                    rooms[rooms[0].width + 1] = new Room(new Position(xP, yP), 3, h);
+                    rooms[0].width++;
+                }
+                return true;
+            } else if (h == -3 && w >= 0) {
+                for (int i = xP; i < xP + w; i++) {
+                    if (WORLD[i][yP + 1] != Tileset.NOTHING) {
+                        return false;
+                    }
+                }
+                if (f && w >= 3) {
+                    rooms[rooms[0].width + 1] = new Room(new Position(xP, yP), w, 3);
+                    rooms[0].width++;
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private static Game loadGame() {
+        File f = new File("./game.ser");
+        if (f.exists()) {
+            try {
+                FileInputStream fs = new FileInputStream(f);
+                ObjectInputStream os = new ObjectInputStream(fs);
+                Game loadGame = (Game) os.readObject();
+                os.close();
+                return loadGame;
+            } catch (FileNotFoundException e) {
+                System.out.println("file not found");
+                System.exit(0);
+            } catch (IOException e) {
+                System.out.println(e);
+                System.exit(0);
+            } catch (ClassNotFoundException e) {
+                System.out.println("class not found");
+                System.exit(0);
+            }
+        }
+
+        /* In the case no World has been saved yet, we return a new one. */
+        return new Game();
+    }
+
+    private static void saveGame(Game w) {
+        File f = new File("./game.ser");
+        try {
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+            FileOutputStream fs = new FileOutputStream(f);
+            ObjectOutputStream os = new ObjectOutputStream(fs);
+            os.writeObject(w);
+            os.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("file not found");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println(e);
+            System.exit(0);
+        }
     }
 }
