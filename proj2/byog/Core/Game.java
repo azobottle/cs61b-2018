@@ -350,6 +350,7 @@ public class Game implements Serializable {
                     Room hw = calDrawInfo(r1, r2, ran);
                     if (drawable(hw, connected, true)) {
                         drawAHallWay(hw);
+                        connected.add(r1);
                         ROOMS.remove(r1);
                         f = true;
                         break;
