@@ -125,7 +125,7 @@ public class Game implements Serializable {
         int r_n = RandomUtils.uniform(ran, MAX - 20, MAX);
         worldInit();
         drawRooms(r_n, ran);
-        //ROOMS.add(new Room(4, 3, 4, 4));
+        //ROOMS.add(new Room(3, 0, 4, 4));
         //ROOMS.add(new Room(0, 0, 4, 4));
         draw_set();
 
@@ -341,8 +341,8 @@ public class Game implements Serializable {
         }
         con.add(un_on.removeFirst());
         while (!un_on.isEmpty()) {
-           // if (un_on.size() == 1) {
-           // System.out.println(TETile.toString(WORLD));
+            // if (un_on.size() == 1) {
+            // System.out.println(TETile.toString(WORLD));
             //}
             shufflelist(ran, un_on);
             shufflelist(ran, con);
@@ -353,7 +353,6 @@ public class Game implements Serializable {
                     if (drawable(hw)) {
                         useHelperHW_add(hw, con);
                         useHelperHW_draw(hw);
-                        //System.out.println(TETile.toString(WORLD));
                         con.add(r1);
                         un_on.remove(r1);
                         f = true;
@@ -651,9 +650,15 @@ public class Game implements Serializable {
 
     private void drawCorner(int x, int y) {
         for (int i = -1; i < 2; i++) {
-            WORLD[x + i][y - 1] = Tileset.WALL;
-            WORLD[x + i][y + 1] = Tileset.WALL;
-            WORLD[x + i][y] = Tileset.WALL;
+            if (WORLD[x + i][y - 1] == Tileset.NOTHING) {
+                WORLD[x + i][y - 1] = Tileset.WALL;
+            }
+            if (WORLD[x + i][y + 1] == Tileset.NOTHING) {
+                WORLD[x + i][y + 1] = Tileset.WALL;
+            }
+            if (WORLD[x + i][y] == Tileset.NOTHING) {
+                WORLD[x + i][y] = Tileset.WALL;
+            }
         }
         WORLD[x][y] = Tileset.FLOOR;
     }
