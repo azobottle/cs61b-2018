@@ -19,10 +19,10 @@ public class Game implements Serializable {
         int h;
 
         Room(Random r) {
-            x = RandomUtils.uniform(r, WIDTH - 3);
-            y = RandomUtils.uniform(r, HEIGHT - 3);
-            w = RandomUtils.uniform(r, 3, 9);
-            h = RandomUtils.uniform(r, 3, 9);
+            x = RandomUtils.uniform(r, WIDTH - 4);
+            y = RandomUtils.uniform(r, HEIGHT - 4);
+            w = RandomUtils.uniform(r, 4, 9);
+            h = RandomUtils.uniform(r, 4, 9);
         }
 
         Room(int x, int y, int w, int h) {
@@ -125,6 +125,10 @@ public class Game implements Serializable {
         int r_n = RandomUtils.uniform(ran, MAX - 20, MAX);
         worldInit();
         drawRooms(r_n, ran);
+        //ROOMS.add(new Room(4, 3, 4, 4));
+        //ROOMS.add(new Room(0, 0, 4, 4));
+        draw_set();
+
         drawHallWays(ran);
         e = new Entity(ran, WORLD, WIDTH, HEIGHT);
     }
@@ -297,19 +301,19 @@ public class Game implements Serializable {
         }
     }
 
-    private void draw_set(TETile[][] world) {
+    private void draw_set() {
         for (Room r : ROOMS) {
             for (int i = r.x; i < r.x + r.w; i++) {
-                world[i][r.y] = Tileset.WALL;
-                world[i][r.y + r.h - 1] = Tileset.WALL;
+                WORLD[i][r.y] = Tileset.WALL;
+                WORLD[i][r.y + r.h - 1] = Tileset.WALL;
             }
             for (int i = r.y; i < r.y + r.h; i++) {
-                world[r.x][i] = Tileset.WALL;
-                world[r.x + r.w - 1][i] = Tileset.WALL;
+                WORLD[r.x][i] = Tileset.WALL;
+                WORLD[r.x + r.w - 1][i] = Tileset.WALL;
             }
             for (int i = r.x + 1; i < r.x + r.w - 1; i++) {
                 for (int j = r.y + 1; j < r.y + r.h - 1; j++) {
-                    world[i][j] = Tileset.FLOOR;
+                    WORLD[i][j] = Tileset.FLOOR;
                 }
             }
         }
@@ -324,32 +328,34 @@ public class Game implements Serializable {
                 ROOMS.add(current_room);
             }
         }
-        draw_set(WORLD);
+        draw_set();
     }
 
     private void drawHallWays(Random ran) {
 
-        LinkedList<Room> connected = new LinkedList<>();
-        LinkedList<Room> unconnected = new LinkedList<>();
+
+        LinkedList<Room> con = new LinkedList<>();
+        LinkedList<Room> un_on = new LinkedList<>();
         for (Room r : ROOMS) {
-            unconnected.addFirst(r);
+            un_on.addLast(r);
         }
-        connected.add(unconnected.removeFirst());
-        while (!unconnected.isEmpty()) {
-            if (unconnected.size() == 1) {
-                 System.out.println(TETile.toString(WORLD));
-            }
-            shufflelist(ran, unconnected);
-            shufflelist(ran, connected);
-            for (Room r1 : unconnected) {
+        con.add(un_on.removeFirst());
+        while (!un_on.isEmpty()) {
+           // if (un_on.size() == 1) {
+           // System.out.println(TETile.toString(WORLD));
+            //}
+            shufflelist(ran, un_on);
+            shufflelist(ran, con);
+            for (Room r1 : un_on) {
                 boolean f = false;
-                for (Room r2 : connected) {
-                    Room hw = calDrawInfo(r1, r2, ran);
-                    if (drawable(hw, connected, true)) {
-                        drawAHallWay(hw);
+                for (Room r2 : con) {
+                    Room hw = calHelperHW(r1, r2, ran);
+                    if (drawable(hw)) {
+                        useHelperHW_add(hw, con);
+                        useHelperHW_draw(hw);
                         //System.out.println(TETile.toString(WORLD));
-                        connected.add(r1);
-                        unconnected.remove(r1);
+                        con.add(r1);
+                        un_on.remove(r1);
                         f = true;
                         break;
                     }
@@ -372,7 +378,7 @@ public class Game implements Serializable {
         }
     }
 
-    private Room calDrawInfo(Room r1, Room r2, Random ran) {//27 10 7 4,20 2 6 8
+    private Room calHelperHW(Room r1, Room r2, Random ran) {//sign of x,y repre direc,mount of w,h repre distance (in or out)
         int xl1 = r1.x;
         int xr1 = r1.x + r1.w - 1;
         int yd1 = r1.y;
@@ -382,200 +388,276 @@ public class Game implements Serializable {
         int yd2 = r2.y;
         int yu2 = r2.y + r2.h - 1;
         int x, y, w, h;
-        if (xl1 + 1 < xr2 && xr1 - 1 > xl2) {
-            int a, b;
-            a = Math.max(xl1, xl2);
-            b = Math.min(xr1, xr2);//求x轴上的交集
-            x = RandomUtils.uniform(ran, a, b - 1);//垂直hallway的左端
-            if (yd1 < yd2) {
-                y = yu1 + 1;
-                h = yd2 - yu1 - 1;
+        if (RandomUtils.bernoulli(ran)) {//hon_r1
+            x = RandomUtils.uniform(ran, xl2 + 1, xr2);
+            y = RandomUtils.uniform(ran, yd1 + 1, yu1);
+            if (x < xl1) {
+                w = xl1 - x;
+            } else if (xr1 < x) {
+                w = x - xr1;
+                x = -x;
+            } else if (x == xl1 | x == xr1) {
+                w = -1;
             } else {
-                y = yu2 + 1;
-                h = yd1 - yu2 - 1;
+                w = 0;
             }
-            return new Room(x, y, -3, Math.max(h, 0));
-        } else if (yd1 + 1 < yu2 && yu1 - 1 > yd2) {
-            int a, b;
-            a = Math.max(yd1, yd2);
-            b = Math.min(yu1, yu2);//求y轴上的交集
-            y = RandomUtils.uniform(ran, a, b - 1);//水平hallway的下端
-            if (xl1 < xl2) {
-                x = xr1 + 1;
-                w = xl2 - xr1 - 1;
+            if (y < yd2) {
+                h = yd2 - y;
+            } else if (yu2 < y) {
+                h = y - yu2;
+                y = -y;
+            } else if (y == yd2 || y == yu2) {
+                h = -1;
             } else {
-                x = xr2 + 1;
-                w = xl1 - xr2 - 1;
+                h = 0;
             }
-            return new Room(x, y, Math.max(w, 0), -3);
         } else {
-            if (RandomUtils.bernoulli(ran)) {
-                x = RandomUtils.uniform(ran, xl2, xr2 - 1);
-                y = RandomUtils.uniform(ran, yd1, yu1 - 1);
-                if (xl1 - x > 0) {
-                    w = xl1 - x - 3;
-                } else {
-                    w = x - xr1 - 1;
-                    x = -x;
-                }
-                if (yd2 - y > 0) {
-                    h = yd2 - y - 3;
-                } else {
-                    h = y - yu2 - 1;
-                    y = -y;
-                }
+            x = RandomUtils.uniform(ran, xl1 + 1, xr1);
+            y = RandomUtils.uniform(ran, yd2 + 1, yu2);
+            if (x < xl2) {
+                w = xl2 - x;
+            } else if (xr2 < x) {
+                w = x - xr2;
+                x = -x;
+            } else if (x == xl2 || x == xr2) {
+                w = -1;
             } else {
-                x = RandomUtils.uniform(ran, xl1, xr1 - 1);
-                y = RandomUtils.uniform(ran, yd2, yu2 - 1);
-                if (xl2 - x > 0) {
-                    w = xl2 - x - 3;
-                } else {
-                    w = x - xr2 - 1;
-                    x = -x;
-                }
-                if (yd1 - y > 0) {
-                    h = yd1 - y - 3;
-                } else {
-                    h = y - yu1 - 1;
-                    y = -y;
-                }
-
+                w = 0;
             }
-            return new Room(x, y, Math.max(w, 0), Math.max(h, 0));
+            if (y < yd1) {
+                h = yd1 - y;
+            } else if (yu1 < y) {
+                h = y - yu1;
+                y = -y;
+            } else {
+                h = 0;
+            }
         }
+        return new Room(x, y, w, h);
     }
 
-    private void drawAHallWay(Room hw) {
+    private boolean drawable(Room hw) {
         int xP, yP, w, h;
         xP = hw.x;
         yP = hw.y;
         w = hw.w;
         h = hw.h;
-        if (!(w == -3 || h == -3)) {
-            drawCorner(Math.abs(xP), Math.abs(yP));
-            if (xP < 0) {
-                xP = -xP;
-                drawAHallWay(new Room(xP - w, Math.abs(yP), w, -3));
-            } else {
-                drawAHallWay(new Room(xP + 3, Math.abs(yP), w, -3));
-            }
-            if (yP < 0) {
-                yP = -yP;
-                drawAHallWay(new Room(Math.abs(xP), yP - h, -3, h));
-            } else {
-                drawAHallWay(new Room(Math.abs(xP), yP + 3, -3, h));
+        if (w == -1 || h == -1) {
+            return false;
+        } else if (w != 0 && h != 0) {//outside
+            return check_Hon(xP, yP, w, 1) && check_Ver(xP, yP, h, 1);
+        } else {
+            return check_Hon(xP, yP, w, 2) && check_Ver(xP, yP, h, 2);
+        }
+    }
+
+    private boolean check_Hon(int x, int y, int w, int max_tho) {
+        int cnt = 0;
+        if (x < 0) {
+            for (int i = -x; i >= -x - w; i--) {
+                if (WORLD[i][Math.abs(y)] == Tileset.WALL) {
+                    cnt++;
+                    if (cnt > max_tho) {
+                        return false;
+                    }
+                }
             }
         } else {
-            if (w == -3) {
-                for (int i = yP - 2; i <= yP + h + 1; i++) {
-                    if (WORLD[xP][i] != Tileset.FLOOR) {
-                        WORLD[xP][i] = Tileset.WALL;
-                    }
-                    WORLD[xP + 1][i] = Tileset.FLOOR;
-                    if (WORLD[xP + 2][i] != Tileset.FLOOR) {
-                        WORLD[xP + 2][i] = Tileset.WALL;
-                    }
-                }
-            } else {
-                for (int i = xP - 2; i <= xP + w + 1; i++) {
-                    if (WORLD[i][yP] != Tileset.FLOOR) {
-                        WORLD[i][yP] = Tileset.WALL;
-                    }
-                    WORLD[i][yP + 1] = Tileset.FLOOR;
-                    if (WORLD[i][yP + 2] != Tileset.FLOOR) {
-                        WORLD[i][yP + 2] = Tileset.WALL;
+            for (int i = x; i <= x + w; i++) {
+                if (WORLD[i][Math.abs(y)] == Tileset.WALL) {
+                    cnt++;
+                    if (cnt > max_tho) {
+                        return false;
                     }
                 }
             }
+        }
+        return true;
+    }
+
+    private boolean check_Ver(int x, int y, int h, int max_tho) {
+        int cnt = 0;
+        if (y < 0) {
+            for (int i = -y; i >= -y - h; i--) {
+                if (WORLD[Math.abs(x)][i] == Tileset.WALL) {
+                    cnt++;
+                    if (cnt > max_tho) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            for (int i = y; i <= y + h; i++) {
+                if (WORLD[Math.abs(x)][i] == Tileset.WALL) {
+                    cnt++;
+                    if (cnt > max_tho) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private void useHelperHW_draw(Room hw) {
+        int x, y, w, h;
+        x = hw.x;
+        y = hw.y;
+        w = hw.w;
+        h = hw.h;
+        if (w != 0 && h != 0) {
+            drawCorner(Math.abs(x), Math.abs(y));
+        }
+        if (x < 0) {
+            for (int i = -x - 1; i >= -x - w; i--) {
+                WORLD[i][Math.abs(y)] = Tileset.FLOOR;
+                if (WORLD[i][Math.abs(y) + 1] == Tileset.NOTHING) {
+                    WORLD[i][Math.abs(y) + 1] = Tileset.WALL;
+                }
+                if (WORLD[i][Math.abs(y) - 1] == Tileset.NOTHING) {
+                    WORLD[i][Math.abs(y) - 1] = Tileset.WALL;
+                }
+            }
+        } else {
+            for (int i = x + 1; i <= x + w; i++) {
+                WORLD[i][Math.abs(y)] = Tileset.FLOOR;
+                if (WORLD[i][Math.abs(y) + 1] == Tileset.NOTHING) {
+                    WORLD[i][Math.abs(y) + 1] = Tileset.WALL;
+                }
+                if (WORLD[i][Math.abs(y) - 1] == Tileset.NOTHING) {
+                    WORLD[i][Math.abs(y) - 1] = Tileset.WALL;
+                }
+            }
+        }
+        if (y < 0) {
+            for (int i = -y - 1; i >= -y - h; i--) {
+                WORLD[Math.abs(x)][i] = Tileset.FLOOR;
+                if (WORLD[Math.abs(x) + 1][i] == Tileset.NOTHING) {
+                    WORLD[Math.abs(x) + 1][i] = Tileset.WALL;
+                }
+                if (WORLD[Math.abs(x) - 1][i] == Tileset.NOTHING) {
+                    WORLD[Math.abs(x) - 1][i] = Tileset.WALL;
+                }
+
+            }
+        } else {
+            for (int i = y + 1; i <= y + h; i++) {
+                WORLD[Math.abs(x)][i] = Tileset.FLOOR;
+                if (WORLD[Math.abs(x) + 1][i] == Tileset.NOTHING) {
+                    WORLD[Math.abs(x) + 1][i] = Tileset.WALL;
+                }
+                if (WORLD[Math.abs(x) - 1][i] == Tileset.NOTHING) {
+                    WORLD[Math.abs(x) - 1][i] = Tileset.WALL;
+                }
+            }
+        }
+    }
+
+    /*private void draw_ver(Room hw, boolean up) {
+        int x, y, h, sign;
+        x = Math.abs(hw.x);
+        y = Math.abs(hw.y);
+        h = hw.h;
+        if (!up) {
+            sign = -1;
+        } else {
+            sign = 1;
+        }
+    }
+
+    private void draw_hon(Room hw, boolean right) {
+        int x, y, w, sign;
+        x = Math.abs(hw.x);
+        y = Math.abs(hw.y);
+        w = hw.w;
+        if (!right) {
+            sign = -1;
+        } else {
+            sign = 1;
+        }
+    }*/
+
+    private void useHelperHW_add(Room hw, LinkedList<Room> con) {
+        if (hw.w != 0) {
+            //hon
+            //outside
+            //right
+            add_hon(new Room(Math.abs(hw.x), Math.abs(hw.y), hw.w, hw.h), con, hw.h != 0, hw.x > 0);
+        }
+        if (hw.h != 0) {
+            add_ver(new Room(Math.abs(hw.x), Math.abs(hw.y), hw.w, hw.h), con, hw.w != 0, hw.y > 0);
+        }
+    }
+
+    private void add_hon(Room hw, LinkedList<Room> con, boolean outside, boolean right) {
+        int x = hw.x, y = hw.y, w = hw.w, h = 3, r, l;
+        if (outside) {
+            if (right) {
+                r = x + w - 1;
+                l = x - 1;
+            } else {
+                l = x - w + 1;
+                r = x + 1;
+            }
+        } else {
+            if (right) {
+                r = x + w - 1;
+                while (WORLD[x][y] != Tileset.WALL) {
+                    x++;
+                }
+                l = x + 1;
+            } else {
+                l = x - w + 1;
+                while (WORLD[x][y] != Tileset.WALL) {
+                    x--;
+                }
+                r = x - 1;
+            }
+        }
+        if (r - l + 1 > 3) {
+            con.add(new Room(l, y - 1, r - l + 1, h));
+        }
+    }
+
+    private void add_ver(Room hw, LinkedList<Room> con, boolean outside, boolean up) {
+        int x = hw.x, y = hw.y, w = 3, h = hw.h, u, d;
+        if (outside) {
+            if (up) {
+                u = y + h - 1;
+                d = y - 1;
+            } else {
+                d = y - h + 1;
+                u = y + 1;
+            }
+        } else {
+            if (up) {
+                u = y + h - 1;
+                while (WORLD[x][y] != Tileset.WALL) {
+                    y++;
+                }
+                d = y + 1;
+            } else {
+                d = y - h + 1;
+                while (WORLD[x][y] != Tileset.WALL) {
+                    y--;
+                }
+                u = y - 1;
+            }
+        }
+        if (u - d + 1 >= 3) {
+            con.add(new Room(x - 1, d, w, u - d + 1));
         }
     }
 
     private void drawCorner(int x, int y) {
-        for (int i = 0; i < 3; i++) {
-            if (WORLD[x + i][y] != Tileset.FLOOR) {
-                WORLD[x + i][y] = Tileset.WALL;
-            }
-            if (WORLD[x + i][y + 1] != Tileset.FLOOR) {
-                WORLD[x + i][y + 1] = Tileset.WALL;
-            }
-            if (WORLD[x + i][y + 2] != Tileset.FLOOR) {
-                WORLD[x + i][y + 2] = Tileset.WALL;
-            }
+        for (int i = -1; i < 2; i++) {
+            WORLD[x + i][y - 1] = Tileset.WALL;
+            WORLD[x + i][y + 1] = Tileset.WALL;
+            WORLD[x + i][y] = Tileset.WALL;
         }
-        WORLD[x + 1][y + 1] = Tileset.FLOOR;
+        WORLD[x][y] = Tileset.FLOOR;
     }
 
-    private boolean drawable(Room hw, LinkedList<Room> list, boolean f) {
-        int xP, yP, w, h;
-        xP = hw.x;
-        yP = hw.y;
-        w = hw.w;
-        h = hw.h;
-        if (!(w == -3 || h == -3)) {
-            boolean f1, f2, f3;
-            Room[] hws = new Room[3];
-            if (xP < 0) {
-                xP = -xP;
-                hws[0] = new Room(xP - w, Math.abs(yP), w, -3);
-            } else {
-                hws[0] = new Room(xP + 3, Math.abs(yP), w, -3);
-            }
-            f1 = drawable(hws[0], list, false);
-            if (yP < 0) {
-                yP = -yP;
-                hws[1] = new Room(Math.abs(xP), yP - h, -3, h);
-            } else {
-                hws[1] = new Room(Math.abs(xP), yP + 3, -3, h);
-            }
-            f2 = drawable(hws[1], list, false);
-            hws[2] = new Room(Math.abs(xP), Math.abs(yP), -3, -3);
-            f3 = drawable(hws[2], list, false);
-            if (f1 && f2 && f3) {
-                hws[0].h = 3;
-                extend_hw(hws[0], false);
-                hws[1].w = 3;
-                extend_hw(hws[1], true);
-
-                for (int i = 0; i < 2; i++) {
-                    if (hws[i].w >= 3 && hws[i].h >= 3) {
-                        list.add(hws[i]);
-                    }
-                }
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            if (w == -3 && h == -3) {
-                for (int i = xP; i < xP + 3; i++) {
-                    if (WORLD[i][yP + 1] != Tileset.NOTHING || WORLD[i][yP + 2] != Tileset.NOTHING || WORLD[i][yP] != Tileset.NOTHING) {
-                        return false;
-                    }
-                }
-                return true;
-            } else if (w == -3) {
-                for (int i = yP; i < yP + h; i++) {
-                    if (WORLD[xP + 1][i] != Tileset.NOTHING || WORLD[xP + 2][i] != Tileset.NOTHING || WORLD[xP][i] != Tileset.NOTHING) {//|| WORLD[xP - 1][i] != Tileset.NOTHING || WORLD[xP][i] != Tileset.NOTHING
-                        return false;
-                    }
-                }
-                if (f && h >= 3) {
-                    list.add(extend_hw(new Room(xP, yP, 3, h), true));
-                }
-                return true;
-            } else {
-                for (int i = xP; i < xP + w; i++) {
-                    if (WORLD[i][yP + 1] != Tileset.NOTHING || WORLD[i][yP + 2] != Tileset.NOTHING || WORLD[i][yP] != Tileset.NOTHING) {//|| WORLD[i][yP - 1] != Tileset.NOTHING || WORLD[i][yP] != Tileset.NOTHING
-                        return false;
-                    }
-                }
-                if (f && w >= 3) {
-                    list.add(extend_hw(new Room(xP, yP, w, 3), false));
-                }
-                return true;
-            }
-        }
-    }
 
     private static Room extend_hw(Room hw, boolean hw_is_vertical) {
         if (hw_is_vertical) {
@@ -608,8 +690,6 @@ public class Game implements Serializable {
                 System.exit(0);
             }
         }
-
-        /* In the case no World has been saved yet, we return a new one. */
         return new Game();
     }
 
