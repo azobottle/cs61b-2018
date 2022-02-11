@@ -33,11 +33,11 @@ public class Game implements Serializable {
         }
 
 
-        public static boolean OverLap(Room r1, LinkedList<Room> list) {
-            int xl1 = r1.pos.xP;
-            int xr1 = r1.pos.xP + r1.width - 1;
-            int yd1 = r1.pos.yP;
-            int yu1 = r1.pos.yP + r1.height - 1;
+        public boolean OverLap(LinkedList<Room> list) {
+            int xl1 = this.pos.xP;
+            int xr1 = this.pos.xP + this.width - 1;
+            int yd1 = this.pos.yP;
+            int yu1 = this.pos.yP + this.height - 1;
 
             for (Room r : list) {
                 int xl2 = r.pos.xP;
@@ -51,9 +51,9 @@ public class Game implements Serializable {
             return false;
         }
 
-        public static boolean Screen_OverBound(Room r, int width, int height) {
-            int xr = r.pos.xP + r.width - 1;
-            int yu = r.pos.yP + r.height - 1;
+        public boolean Screen_OverBound(int width, int height) {
+            int xr = this.pos.xP + this.width - 1;
+            int yu = this.pos.yP + this.height - 1;
             return xr >= width || yu >= height;
         }
     }
@@ -131,7 +131,7 @@ public class Game implements Serializable {
     private TETile[][] WORLD = new TETile[WIDTH][HEIGHT];
     private Entity e;
 
-    private Game(Random ran) {
+    public Game(Random ran) {
         int r_n = RandomUtils.uniform(ran, MAX - 20, MAX);
         worldInit();
         drawRooms(r_n, ran);
@@ -139,7 +139,7 @@ public class Game implements Serializable {
         e = new Entity(ran, WORLD, WIDTH, HEIGHT);
     }
 
-    private Game() {
+    public Game() {
         Random ran = new Random();
         new Game(ran);
     }
@@ -184,6 +184,7 @@ public class Game implements Serializable {
                         if (!f) {
                             game = loadGame();
                             game.ter.renderFrame(game.WORLD);
+                            f = true;
                         }
                         break;
                     case 'q':
@@ -322,8 +323,8 @@ public class Game implements Serializable {
 
         while (ROOMS.size() != r_n) {
             Room current_room = new Room(ran);
-            if (!Room.Screen_OverBound(current_room, WIDTH, HEIGHT) &&
-                    !Room.OverLap(current_room, ROOMS)) {
+            if (!current_room.Screen_OverBound(WIDTH, HEIGHT) &&
+                    !current_room.OverLap(ROOMS)) {
                 ROOMS.add(current_room);
             }
         }
@@ -525,7 +526,9 @@ public class Game implements Serializable {
             f2 = drawable(hws[1], list, false);
             if (f1 && f2) {
                 hws[0].height = 3;
+                extend_hw(hws[0], false);
                 hws[1].width = 3;
+                extend_hw(hws[1], true);
                 hws[2] = new Room(new Position(Math.abs(xP), Math.abs(yP)), 3, 3);
                 for (int i = 0; i < 3; i++) {
                     if (hws[i].width >= 3 && hws[i].height >= 3) {
@@ -544,7 +547,7 @@ public class Game implements Serializable {
                     }
                 }
                 if (f && h >= 3) {
-                    list.add(new Room(new Position(xP, yP), 3, h));
+                    list.add(extend_hw(new Room(new Position(xP, yP), 3, h), true));
                 }
                 return true;
             } else if (h == -3 && w >= 0) {
@@ -554,12 +557,23 @@ public class Game implements Serializable {
                     }
                 }
                 if (f && w >= 3) {
-                    list.add(new Room(new Position(xP, yP), w, 3));
+                    list.add(extend_hw(new Room(new Position(xP, yP), w, 3), false));
                 }
                 return true;
             }
             return false;
         }
+    }
+
+    private static Room extend_hw(Room hw, boolean hw_is_vertical) {
+        if (hw_is_vertical) {
+            hw.pos.yP = (hw.pos.yP - 1 + HEIGHT) % HEIGHT;
+            hw.height = (hw.height + 2 + HEIGHT) % HEIGHT;
+        } else {
+            hw.pos.xP = (hw.pos.xP - 1 + WIDTH) % WIDTH;
+            hw.width = (hw.width + 2 + WIDTH) % WIDTH;
+        }
+        return hw;
     }
 
     private static Game loadGame() {
