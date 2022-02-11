@@ -7,8 +7,6 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 import java.io.*;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -54,7 +52,9 @@ public class Game implements Serializable {
         public boolean Screen_OverBound(int width, int height) {
             int xr = this.pos.xP + this.width - 1;
             int yu = this.pos.yP + this.height - 1;
-            return xr >= width || yu >= height;
+            int xl = this.pos.xP;
+            int yd = this.pos.yP;
+            return xr >= width || yu >= height || xl < 0 || yd < 0;
         }
     }
 
@@ -342,6 +342,9 @@ public class Game implements Serializable {
         LinkedList<Room> connected = new LinkedList<>();
         connected.add(ROOMS.removeFirst());
         while (!ROOMS.isEmpty()) {
+            if (ROOMS.size() == 1) {
+                System.out.println(TETile.toString(WORLD));
+            }
             shufflelist(ran, ROOMS);
             shufflelist(ran, connected);
             for (Room r1 : ROOMS) {
@@ -350,6 +353,7 @@ public class Game implements Serializable {
                     Room hw = calDrawInfo(r1, r2, ran);
                     if (drawable(hw, connected, true)) {
                         drawAHallWay(hw);
+                        //System.out.println(TETile.toString(WORLD));
                         connected.add(r1);
                         ROOMS.remove(r1);
                         f = true;
@@ -396,7 +400,7 @@ public class Game implements Serializable {
                 y = yu2 + 1;
                 h = yd1 - yu2 - 1;
             }
-            return new Room(new Position(x, y), -3, h);
+            return new Room(new Position(x, y), -3, Math.max(h, 0));
         } else if (yd1 + 1 < yu2 && yu1 - 1 > yd2) {
             int a, b;
             a = Math.max(yd1, yd2);
@@ -409,7 +413,7 @@ public class Game implements Serializable {
                 x = xr2 + 1;
                 w = xl1 - xr2 - 1;
             }
-            return new Room(new Position(x, y), w, -3);
+            return new Room(new Position(x, y), Math.max(w, 0), -3);
         } else {
             if (RandomUtils.bernoulli(ran)) {
                 x = RandomUtils.uniform(ran, xl2, xr2 - 1);
@@ -426,7 +430,6 @@ public class Game implements Serializable {
                     h = y - yu2 - 1;
                     y = -y;
                 }
-
             } else {
                 x = RandomUtils.uniform(ran, xl1, xr1 - 1);
                 y = RandomUtils.uniform(ran, yd2, yu2 - 1);
@@ -444,7 +447,7 @@ public class Game implements Serializable {
                 }
 
             }
-            return new Room(new Position(x, y), w, h);
+            return new Room(new Position(x, y), Math.max(w, 0), Math.max(h, 0));
         }
     }
 
@@ -470,7 +473,7 @@ public class Game implements Serializable {
             }
         } else {
             if (w == -3) {
-                for (int i = yP - 1; i <= yP + h; i++) {
+                for (int i = yP - 2; i <= yP + h + 1; i++) {
                     if (WORLD[xP][i] != Tileset.FLOOR) {
                         WORLD[xP][i] = Tileset.WALL;
                     }
@@ -480,7 +483,7 @@ public class Game implements Serializable {
                     }
                 }
             } else {
-                for (int i = xP - 1; i <= xP + w; i++) {
+                for (int i = xP - 2; i <= xP + w + 1; i++) {
                     if (WORLD[i][yP] != Tileset.FLOOR) {
                         WORLD[i][yP] = Tileset.WALL;
                     }
@@ -515,7 +518,7 @@ public class Game implements Serializable {
         w = hw.width;
         h = hw.height;
         if (!(w == -3 || h == -3)) {
-            boolean f1, f2;
+            boolean f1, f2, f3;
             Room[] hws = new Room[3];
             if (xP < 0) {
                 xP = -xP;
@@ -531,13 +534,15 @@ public class Game implements Serializable {
                 hws[1] = new Room(new Position(Math.abs(xP), yP + 3), -3, h);
             }
             f2 = drawable(hws[1], list, false);
-            if (f1 && f2) {
+            hws[2] = new Room(new Position(Math.abs(xP), Math.abs(yP)), -3, -3);
+            f3 = drawable(hws[2], list, false);
+            if (f1 && f2 && f3) {
                 hws[0].height = 3;
                 extend_hw(hws[0], false);
                 hws[1].width = 3;
                 extend_hw(hws[1], true);
-                hws[2] = new Room(new Position(Math.abs(xP), Math.abs(yP)), 3, 3);
-                for (int i = 0; i < 3; i++) {
+
+                for (int i = 0; i < 2; i++) {
                     if (hws[i].width >= 3 && hws[i].height >= 3) {
                         list.add(hws[i]);
                     }
@@ -547,9 +552,16 @@ public class Game implements Serializable {
                 return false;
             }
         } else {
-            if (w == -3 && h >= 0) {
+            if (w == -3 && h == -3) {
+                for (int i = xP; i < xP + 3; i++) {
+                    if (WORLD[i][yP + 1] != Tileset.NOTHING || WORLD[i][yP + 2] != Tileset.NOTHING || WORLD[i][yP] != Tileset.NOTHING) {
+                        return false;
+                    }
+                }
+                return true;
+            } else if (w == -3) {
                 for (int i = yP; i < yP + h; i++) {
-                    if (WORLD[xP + 1][i] != Tileset.NOTHING) {
+                    if (WORLD[xP + 1][i] != Tileset.NOTHING || WORLD[xP + 2][i] != Tileset.NOTHING || WORLD[xP][i] != Tileset.NOTHING) {//|| WORLD[xP - 1][i] != Tileset.NOTHING || WORLD[xP][i] != Tileset.NOTHING
                         return false;
                     }
                 }
@@ -557,9 +569,9 @@ public class Game implements Serializable {
                     list.add(extend_hw(new Room(new Position(xP, yP), 3, h), true));
                 }
                 return true;
-            } else if (h == -3 && w >= 0) {
+            } else {
                 for (int i = xP; i < xP + w; i++) {
-                    if (WORLD[i][yP + 1] != Tileset.NOTHING) {
+                    if (WORLD[i][yP + 1] != Tileset.NOTHING || WORLD[i][yP + 2] != Tileset.NOTHING || WORLD[i][yP] != Tileset.NOTHING) {//|| WORLD[i][yP - 1] != Tileset.NOTHING || WORLD[i][yP] != Tileset.NOTHING
                         return false;
                     }
                 }
@@ -568,7 +580,6 @@ public class Game implements Serializable {
                 }
                 return true;
             }
-            return false;
         }
     }
 
