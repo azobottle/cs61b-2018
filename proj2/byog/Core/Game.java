@@ -153,53 +153,59 @@ public class Game implements Serializable {
         boolean f = false;
         Game game = null;
         while (true) {
-            if (StdDraw.hasNextKeyTyped()) {
-                char c = StdDraw.nextKeyTyped();
-                c = Character.toLowerCase(c);
-                switch (c) {
-                    case 'n':
-                        if (!f) {
-                            long seed;
-                            StringBuffer sb = new StringBuffer();
-                            drawframe("please enter your seed(end with s)");
-                            while (true) {
-                                if (StdDraw.hasNextKeyTyped()) {
-                                    char cc = StdDraw.nextKeyTyped();
-                                    if ("0123456789".indexOf(cc) >= 0) {
-                                        sb.append(cc);
-                                        drawframe("please enter your seed(end with s)", new String(sb));
-                                    } else if (cc == 's') {
-                                        seed = Long.parseLong(new String(sb));
-                                        game = new Game(new Random(seed));
-                                        StdDraw.pause(500);
-                                        game.ter.renderFrame(game.WORLD);
-                                        f = true;
-                                        break;
-                                    }
-                                }
+            char c = getkeyboardinput_tolowercase();
+            switch (c) {
+                case 'n':
+                    if (!f) {
+                        long seed;
+                        StringBuffer sb = new StringBuffer();
+                        drawframe("please enter your seed(end with s)");
+                        while (true) {
+                            char cc = getkeyboardinput_tolowercase();
+                            if ("0123456789".indexOf(cc) >= 0) {
+                                sb.append(cc);
+                                drawframe("please enter your seed(end with s)", new String(sb));
+                            } else if (cc == 's') {
+                                seed = Long.parseLong(new String(sb));
+                                game = new Game(new Random(seed));
+                                StdDraw.pause(500);
+                                game.ter.renderFrame(game.WORLD);
+                                f = true;
+                                break;
                             }
                         }
-                        break;
-                    case 'l':
-                        if (!f) {
-                            game = loadGame();
-                            game.ter.renderFrame(game.WORLD);
-                            f = true;
-                        }
-                        break;
-                    case 'q':
-                        if (f) {
+                    }
+                    break;
+                case 'l':
+                    if (!f) {
+                        game = loadGame();
+                        game.ter.renderFrame(game.WORLD);
+                        f = true;
+                    }
+                    break;
+                case ':':
+                    if (f) {
+                        if (getkeyboardinput_tolowercase() == 'q') {
                             saveGame(game);
                             System.exit(0);
                         }
-                        break;
-                    default:
-                        if ("wsad".indexOf(c) >= 0) {
-                            game.e.move(c);
-                            game.ter.renderFrame(game.WORLD);
-                        }
-                        break;
-                }
+                    }
+                    break;
+                default:
+                    if ("wsad".indexOf(c) >= 0) {
+                        game.e.move(c);
+                        game.ter.renderFrame(game.WORLD);
+                    }
+                    break;
+            }
+        }
+    }
+
+    private static char getkeyboardinput_tolowercase() {
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
+                return Character.toLowerCase(c);
             }
         }
     }
@@ -283,7 +289,7 @@ public class Game implements Serializable {
         while (i < input.length()) {
             game.e.move(input.charAt(i++));
         }
-        if (input.charAt(i - 1) == 'q') {
+        if (input.charAt(i - 1) == 'q' && input.charAt(i - 2) == ':') {
             saveGame(game);
         }
 
