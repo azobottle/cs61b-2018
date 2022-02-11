@@ -14,34 +14,36 @@ public class Game implements Serializable {
     private class Room implements Serializable {
 
 
-        Position pos;
-        int width;
-        int height;
+        int x, y;
+        int w;
+        int h;
 
         Room(Random r) {
-            pos = new Position(RandomUtils.uniform(r, WIDTH - 3), RandomUtils.uniform(r, HEIGHT - 3));
-            width = RandomUtils.uniform(r, 3, 9);
-            height = RandomUtils.uniform(r, 3, 9);
+            x = RandomUtils.uniform(r, WIDTH - 3);
+            y = RandomUtils.uniform(r, HEIGHT - 3);
+            w = RandomUtils.uniform(r, 3, 9);
+            h = RandomUtils.uniform(r, 3, 9);
         }
 
-        Room(Position p, int w, int h) {
-            pos = p;
-            width = w;
-            height = h;
+        Room(int x, int y, int w, int h) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
         }
 
 
         public boolean OverLap(LinkedList<Room> list) {
-            int xl1 = this.pos.xP;
-            int xr1 = this.pos.xP + this.width - 1;
-            int yd1 = this.pos.yP;
-            int yu1 = this.pos.yP + this.height - 1;
+            int xl1 = x;
+            int xr1 = x + this.w - 1;
+            int yd1 = y;
+            int yu1 = y + this.h - 1;
 
             for (Room r : list) {
-                int xl2 = r.pos.xP;
-                int xr2 = r.pos.xP + r.width - 1;
-                int yd2 = r.pos.yP;
-                int yu2 = r.pos.yP + r.height - 1;
+                int xl2 = r.x;
+                int xr2 = r.x + r.w - 1;
+                int yd2 = r.y;
+                int yu2 = r.y + r.h - 1;
                 if (!(xl2 > xr1 || xr2 < xl1 || yu2 < yd1 || yd2 > yu1)) {
                     return true;
                 }
@@ -50,26 +52,14 @@ public class Game implements Serializable {
         }
 
         public boolean Screen_OverBound(int width, int height) {
-            int xr = this.pos.xP + this.width - 1;
-            int yu = this.pos.yP + this.height - 1;
-            int xl = this.pos.xP;
-            int yd = this.pos.yP;
+            int xr = this.x + this.w - 1;
+            int yu = this.y + this.h - 1;
+            int xl = this.x;
+            int yd = this.y;
             return xr >= width || yu >= height || xl < 0 || yd < 0;
         }
     }
 
-    private class Position implements Serializable {
-        int xP;
-        int yP;
-
-        Position() {
-        }
-
-        Position(int x, int y) {
-            xP = x;
-            yP = y;
-        }
-    }
 
     private class Entity implements Serializable {
         int x, y;
@@ -309,16 +299,16 @@ public class Game implements Serializable {
 
     private void draw_set(TETile[][] world) {
         for (Room r : ROOMS) {
-            for (int i = r.pos.xP; i < r.pos.xP + r.width; i++) {
-                world[i][r.pos.yP] = Tileset.WALL;
-                world[i][r.pos.yP + r.height - 1] = Tileset.WALL;
+            for (int i = r.x; i < r.x + r.w; i++) {
+                world[i][r.y] = Tileset.WALL;
+                world[i][r.y + r.h - 1] = Tileset.WALL;
             }
-            for (int i = r.pos.yP; i < r.pos.yP + r.height; i++) {
-                world[r.pos.xP][i] = Tileset.WALL;
-                world[r.pos.xP + r.width - 1][i] = Tileset.WALL;
+            for (int i = r.y; i < r.y + r.h; i++) {
+                world[r.x][i] = Tileset.WALL;
+                world[r.x + r.w - 1][i] = Tileset.WALL;
             }
-            for (int i = r.pos.xP + 1; i < r.pos.xP + r.width - 1; i++) {
-                for (int j = r.pos.yP + 1; j < r.pos.yP + r.height - 1; j++) {
+            for (int i = r.x + 1; i < r.x + r.w - 1; i++) {
+                for (int j = r.y + 1; j < r.y + r.h - 1; j++) {
                     world[i][j] = Tileset.FLOOR;
                 }
             }
@@ -340,14 +330,18 @@ public class Game implements Serializable {
     private void drawHallWays(Random ran) {
 
         LinkedList<Room> connected = new LinkedList<>();
-        connected.add(ROOMS.removeFirst());
-        while (!ROOMS.isEmpty()) {
-            if (ROOMS.size() == 1) {
-                System.out.println(TETile.toString(WORLD));
+        LinkedList<Room> unconnected = new LinkedList<>();
+        for (Room r : ROOMS) {
+            unconnected.addFirst(r);
+        }
+        connected.add(unconnected.removeFirst());
+        while (!unconnected.isEmpty()) {
+            if (unconnected.size() == 1) {
+                 System.out.println(TETile.toString(WORLD));
             }
-            shufflelist(ran, ROOMS);
+            shufflelist(ran, unconnected);
             shufflelist(ran, connected);
-            for (Room r1 : ROOMS) {
+            for (Room r1 : unconnected) {
                 boolean f = false;
                 for (Room r2 : connected) {
                     Room hw = calDrawInfo(r1, r2, ran);
@@ -355,7 +349,7 @@ public class Game implements Serializable {
                         drawAHallWay(hw);
                         //System.out.println(TETile.toString(WORLD));
                         connected.add(r1);
-                        ROOMS.remove(r1);
+                        unconnected.remove(r1);
                         f = true;
                         break;
                     }
@@ -379,14 +373,14 @@ public class Game implements Serializable {
     }
 
     private Room calDrawInfo(Room r1, Room r2, Random ran) {//27 10 7 4,20 2 6 8
-        int xl1 = r1.pos.xP;
-        int xr1 = r1.pos.xP + r1.width - 1;
-        int yd1 = r1.pos.yP;
-        int yu1 = r1.pos.yP + r1.height - 1;
-        int xl2 = r2.pos.xP;
-        int xr2 = r2.pos.xP + r2.width - 1;
-        int yd2 = r2.pos.yP;
-        int yu2 = r2.pos.yP + r2.height - 1;
+        int xl1 = r1.x;
+        int xr1 = r1.x + r1.w - 1;
+        int yd1 = r1.y;
+        int yu1 = r1.y + r1.h - 1;
+        int xl2 = r2.x;
+        int xr2 = r2.x + r2.w - 1;
+        int yd2 = r2.y;
+        int yu2 = r2.y + r2.h - 1;
         int x, y, w, h;
         if (xl1 + 1 < xr2 && xr1 - 1 > xl2) {
             int a, b;
@@ -400,7 +394,7 @@ public class Game implements Serializable {
                 y = yu2 + 1;
                 h = yd1 - yu2 - 1;
             }
-            return new Room(new Position(x, y), -3, Math.max(h, 0));
+            return new Room(x, y, -3, Math.max(h, 0));
         } else if (yd1 + 1 < yu2 && yu1 - 1 > yd2) {
             int a, b;
             a = Math.max(yd1, yd2);
@@ -413,7 +407,7 @@ public class Game implements Serializable {
                 x = xr2 + 1;
                 w = xl1 - xr2 - 1;
             }
-            return new Room(new Position(x, y), Math.max(w, 0), -3);
+            return new Room(x, y, Math.max(w, 0), -3);
         } else {
             if (RandomUtils.bernoulli(ran)) {
                 x = RandomUtils.uniform(ran, xl2, xr2 - 1);
@@ -447,29 +441,29 @@ public class Game implements Serializable {
                 }
 
             }
-            return new Room(new Position(x, y), Math.max(w, 0), Math.max(h, 0));
+            return new Room(x, y, Math.max(w, 0), Math.max(h, 0));
         }
     }
 
     private void drawAHallWay(Room hw) {
         int xP, yP, w, h;
-        xP = hw.pos.xP;
-        yP = hw.pos.yP;
-        w = hw.width;
-        h = hw.height;
+        xP = hw.x;
+        yP = hw.y;
+        w = hw.w;
+        h = hw.h;
         if (!(w == -3 || h == -3)) {
-            drawCorner(new Position(Math.abs(xP), Math.abs(yP)));
+            drawCorner(Math.abs(xP), Math.abs(yP));
             if (xP < 0) {
                 xP = -xP;
-                drawAHallWay(new Room(new Position(xP - w, Math.abs(yP)), w, -3));
+                drawAHallWay(new Room(xP - w, Math.abs(yP), w, -3));
             } else {
-                drawAHallWay(new Room(new Position(xP + 3, Math.abs(yP)), w, -3));
+                drawAHallWay(new Room(xP + 3, Math.abs(yP), w, -3));
             }
             if (yP < 0) {
                 yP = -yP;
-                drawAHallWay(new Room(new Position(Math.abs(xP), yP - h), -3, h));
+                drawAHallWay(new Room(Math.abs(xP), yP - h, -3, h));
             } else {
-                drawAHallWay(new Room(new Position(Math.abs(xP), yP + 3), -3, h));
+                drawAHallWay(new Room(Math.abs(xP), yP + 3, -3, h));
             }
         } else {
             if (w == -3) {
@@ -496,54 +490,54 @@ public class Game implements Serializable {
         }
     }
 
-    private void drawCorner(Position p) {
+    private void drawCorner(int x, int y) {
         for (int i = 0; i < 3; i++) {
-            if (WORLD[p.xP + i][p.yP] != Tileset.FLOOR) {
-                WORLD[p.xP + i][p.yP] = Tileset.WALL;
+            if (WORLD[x + i][y] != Tileset.FLOOR) {
+                WORLD[x + i][y] = Tileset.WALL;
             }
-            if (WORLD[p.xP + i][p.yP + 1] != Tileset.FLOOR) {
-                WORLD[p.xP + i][p.yP + 1] = Tileset.WALL;
+            if (WORLD[x + i][y + 1] != Tileset.FLOOR) {
+                WORLD[x + i][y + 1] = Tileset.WALL;
             }
-            if (WORLD[p.xP + i][p.yP + 2] != Tileset.FLOOR) {
-                WORLD[p.xP + i][p.yP + 2] = Tileset.WALL;
+            if (WORLD[x + i][y + 2] != Tileset.FLOOR) {
+                WORLD[x + i][y + 2] = Tileset.WALL;
             }
         }
-        WORLD[p.xP + 1][p.yP + 1] = Tileset.FLOOR;
+        WORLD[x + 1][y + 1] = Tileset.FLOOR;
     }
 
     private boolean drawable(Room hw, LinkedList<Room> list, boolean f) {
         int xP, yP, w, h;
-        xP = hw.pos.xP;
-        yP = hw.pos.yP;
-        w = hw.width;
-        h = hw.height;
+        xP = hw.x;
+        yP = hw.y;
+        w = hw.w;
+        h = hw.h;
         if (!(w == -3 || h == -3)) {
             boolean f1, f2, f3;
             Room[] hws = new Room[3];
             if (xP < 0) {
                 xP = -xP;
-                hws[0] = new Room(new Position(xP - w, Math.abs(yP)), w, -3);
+                hws[0] = new Room(xP - w, Math.abs(yP), w, -3);
             } else {
-                hws[0] = new Room(new Position(xP + 3, Math.abs(yP)), w, -3);
+                hws[0] = new Room(xP + 3, Math.abs(yP), w, -3);
             }
             f1 = drawable(hws[0], list, false);
             if (yP < 0) {
                 yP = -yP;
-                hws[1] = new Room(new Position(Math.abs(xP), yP - h), -3, h);
+                hws[1] = new Room(Math.abs(xP), yP - h, -3, h);
             } else {
-                hws[1] = new Room(new Position(Math.abs(xP), yP + 3), -3, h);
+                hws[1] = new Room(Math.abs(xP), yP + 3, -3, h);
             }
             f2 = drawable(hws[1], list, false);
-            hws[2] = new Room(new Position(Math.abs(xP), Math.abs(yP)), -3, -3);
+            hws[2] = new Room(Math.abs(xP), Math.abs(yP), -3, -3);
             f3 = drawable(hws[2], list, false);
             if (f1 && f2 && f3) {
-                hws[0].height = 3;
+                hws[0].h = 3;
                 extend_hw(hws[0], false);
-                hws[1].width = 3;
+                hws[1].w = 3;
                 extend_hw(hws[1], true);
 
                 for (int i = 0; i < 2; i++) {
-                    if (hws[i].width >= 3 && hws[i].height >= 3) {
+                    if (hws[i].w >= 3 && hws[i].h >= 3) {
                         list.add(hws[i]);
                     }
                 }
@@ -566,7 +560,7 @@ public class Game implements Serializable {
                     }
                 }
                 if (f && h >= 3) {
-                    list.add(extend_hw(new Room(new Position(xP, yP), 3, h), true));
+                    list.add(extend_hw(new Room(xP, yP, 3, h), true));
                 }
                 return true;
             } else {
@@ -576,7 +570,7 @@ public class Game implements Serializable {
                     }
                 }
                 if (f && w >= 3) {
-                    list.add(extend_hw(new Room(new Position(xP, yP), w, 3), false));
+                    list.add(extend_hw(new Room(xP, yP, w, 3), false));
                 }
                 return true;
             }
@@ -585,11 +579,11 @@ public class Game implements Serializable {
 
     private static Room extend_hw(Room hw, boolean hw_is_vertical) {
         if (hw_is_vertical) {
-            hw.pos.yP = (hw.pos.yP - 2 + HEIGHT) % HEIGHT;
-            hw.height = (hw.height + 4 + HEIGHT) % HEIGHT;
+            hw.y = (hw.y - 2 + HEIGHT) % HEIGHT;
+            hw.h = (hw.h + 4 + HEIGHT) % HEIGHT;
         } else {
-            hw.pos.xP = (hw.pos.xP - 2 + WIDTH) % WIDTH;
-            hw.width = (hw.width + 4 + WIDTH) % WIDTH;
+            hw.x = (hw.x - 2 + WIDTH) % WIDTH;
+            hw.w = (hw.w + 4 + WIDTH) % WIDTH;
         }
         return hw;
     }
