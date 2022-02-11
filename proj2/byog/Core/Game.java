@@ -168,7 +168,7 @@ public class Game implements Serializable {
                                     if ("0123456789".indexOf(cc) >= 0) {
                                         sb.append(cc);
                                         drawframe("please enter your seed(end with s)", new String(sb));
-                                    } else {
+                                    } else if (cc == 's') {
                                         seed = Long.parseLong(new String(sb));
                                         game = new Game(new Random(seed));
                                         StdDraw.pause(500);
