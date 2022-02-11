@@ -7,11 +7,12 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 import java.io.*;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 
 public class Game implements Serializable {
-    private class Room implements Serializable {
+    private static class Room implements Serializable {
 
 
         int x, y;
@@ -64,10 +65,6 @@ public class Game implements Serializable {
     private class Entity implements Serializable {
         int x, y;
         TETile shape = Tileset.PLAYER;
-
-        Entity() {
-        }
-
         Entity(Random ran, TETile[][] world, int w, int h) {
             while (true) {
                 int x = RandomUtils.uniform(ran, w);
@@ -116,7 +113,7 @@ public class Game implements Serializable {
     /* Feel free to change the width and height. */
     private static final int WIDTH = 80;
     private static final int HEIGHT = 30;
-    private static final int MAX = 30;//MAX>=30
+    private static final int MAX = 30;
     private LinkedList<Room> ROOMS = new LinkedList<>();
     private TETile[][] WORLD = new TETile[WIDTH][HEIGHT];
     private Entity e;
@@ -125,10 +122,7 @@ public class Game implements Serializable {
         int r_n = RandomUtils.uniform(ran, MAX - 20, MAX);
         worldInit();
         drawRooms(r_n, ran);
-        //ROOMS.add(new Room(3, 0, 4, 4));
-        //ROOMS.add(new Room(0, 0, 4, 4));
         draw_set();
-
         drawHallWays(ran);
         e = new Entity(ran, WORLD, WIDTH, HEIGHT);
     }
@@ -152,7 +146,7 @@ public class Game implements Serializable {
                 case 'n':
                     if (!f) {
                         long seed;
-                        StringBuffer sb = new StringBuffer();
+                        StringBuilder sb = new StringBuilder();
                         drawframe("please enter your seed(end with s)");
                         while (true) {
                             char cc = getkeyboardinput_tolowercase();
@@ -341,9 +335,6 @@ public class Game implements Serializable {
         }
         con.add(un_on.removeFirst());
         while (!un_on.isEmpty()) {
-            // if (un_on.size() == 1) {
-            // System.out.println(TETile.toString(WORLD));
-            //}
             shufflelist(ran, un_on);
             shufflelist(ran, con);
             for (Room r1 : un_on) {
@@ -372,12 +363,10 @@ public class Game implements Serializable {
             a[i] = list.removeFirst();
         }
         RandomUtils.shuffle(ran, a);
-        for (int i = 0; i < a.length; i++) {
-            list.add(a[i]);
-        }
+        list.addAll(Arrays.asList(a));
     }
 
-    private Room calHelperHW(Room r1, Room r2, Random ran) {//sign of x,y repre direc,mount of w,h repre distance (in or out)
+    private Room calHelperHW(Room r1, Room r2, Random ran) {
         int xl1 = r1.x;
         int xr1 = r1.x + r1.w - 1;
         int yd1 = r1.y;
@@ -552,35 +541,9 @@ public class Game implements Serializable {
         }
     }
 
-    /*private void draw_ver(Room hw, boolean up) {
-        int x, y, h, sign;
-        x = Math.abs(hw.x);
-        y = Math.abs(hw.y);
-        h = hw.h;
-        if (!up) {
-            sign = -1;
-        } else {
-            sign = 1;
-        }
-    }
-
-    private void draw_hon(Room hw, boolean right) {
-        int x, y, w, sign;
-        x = Math.abs(hw.x);
-        y = Math.abs(hw.y);
-        w = hw.w;
-        if (!right) {
-            sign = -1;
-        } else {
-            sign = 1;
-        }
-    }*/
 
     private void useHelperHW_add(Room hw, LinkedList<Room> con) {
         if (hw.w != 0) {
-            //hon
-            //outside
-            //right
             add_hon(new Room(Math.abs(hw.x), Math.abs(hw.y), hw.w, hw.h), con, hw.h != 0, hw.x > 0);
         }
         if (hw.h != 0) {
