@@ -574,10 +574,10 @@ public class Game implements Serializable {
     private static Room extend_hw(Room hw, boolean hw_is_vertical) {
         if (hw_is_vertical) {
             hw.pos.yP = (hw.pos.yP - 2 + HEIGHT) % HEIGHT;
-            hw.height = (hw.height + 3 + HEIGHT) % HEIGHT;
+            hw.height = (hw.height + 4 + HEIGHT) % HEIGHT;
         } else {
             hw.pos.xP = (hw.pos.xP - 2 + WIDTH) % WIDTH;
-            hw.width = (hw.width + 3 + WIDTH) % WIDTH;
+            hw.width = (hw.width + 4 + WIDTH) % WIDTH;
         }
         return hw;
     }
