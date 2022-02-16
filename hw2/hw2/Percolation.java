@@ -14,7 +14,7 @@ public class Percolation {
         if (N <= 0) {
             throw new java.lang.IllegalArgumentException();
         }
-        sentinal = N * N + 1;
+        sentinal = N * N ;
         uf1 = new WeightedQuickUnionUF(N * N + 1);
         uf2 = new WeightedQuickUnionUF(N * N + 1);
         percolate = false;
