@@ -25,7 +25,7 @@ public class Percolation {
 
     public void open(int row, int col) {
         if (row < 0 || row >= N || col < 0 || col >= N) {
-            throw new java.lang.IllegalArgumentException();
+            throw new java.lang.IndexOutOfBoundsException();
         }
         if (isOpen(row, col)) {
             return;
