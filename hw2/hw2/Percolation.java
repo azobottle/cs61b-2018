@@ -6,8 +6,7 @@ public class Percolation {
     private WeightedQuickUnionUF uf;
     private boolean percolate;
     private int N;
-    private int sentinal1;
-    private int sentinal2;
+    private int sentinal;
     private int numbs;
     private boolean[][] is_open;
 
@@ -15,9 +14,8 @@ public class Percolation {
         if (N <= 0) {
             throw new java.lang.IllegalArgumentException();
         }
-        sentinal1 = N * N;
-        sentinal2 = N * N + 1;
-        uf = new WeightedQuickUnionUF(sentinal1 + 2);
+        sentinal = N * N + 1;
+        uf = new WeightedQuickUnionUF(sentinal + 1);
         percolate = false;
         this.N = N;
         numbs = 0;
@@ -35,7 +33,7 @@ public class Percolation {
         is_open[row][col] = true;
         numbs++;
         if (row == 0) {
-            uf.union(pos, sentinal1);
+            uf.union(pos, sentinal);
         }
 
         if (col > 0 && isOpen(row, col - 1)) {
@@ -46,17 +44,14 @@ public class Percolation {
         }
         if (row > 0 && isOpen(row - 1, col)) {
             uf.union(pos, pos - N);
-            if (row == N - 1) {
-                uf.union(pos, sentinal2);
-            }
+
         }
         if (row < N - 1 && isOpen(row + 1, col)) {
             uf.union(pos, pos + N);
-            if (row == 0) {
-                uf.union(pos, sentinal1);
-            }
         }
-
+        if (row == N - 1 && uf.connected(pos, sentinal)) {
+            percolate = true;
+        }
     }     // open the site (row, col) if it is not open already
 
     public boolean isOpen(int row, int col) {
@@ -70,7 +65,7 @@ public class Percolation {
         if (row < 0 || row >= N || col < 0 || col >= N) {
             throw new java.lang.IllegalArgumentException();
         }
-        return uf.connected(row * N + col, sentinal2);
+        return uf.connected(row * N + col, sentinal);
     }// is the site (row, col) full?
 
     public int numberOfOpenSites() {
@@ -78,7 +73,7 @@ public class Percolation {
     }        // number of open sites
 
     public boolean percolates() {
-        return uf.connected(sentinal1, sentinal2);
+        return percolate;
     }     // does the system percolate?
 
     public static void main(String[] args) {
