@@ -49,7 +49,7 @@ public class Percolation {
         if (row < N - 1 && isOpen(row + 1, col)) {
             uf.union(pos, pos + N);
         }
-        if (row == N - 1 && uf.connected(pos, sentinal)) {
+        if (uf.connected(pos, sentinal)) {
             percolate = true;
         }
     }     // open the site (row, col) if it is not open already
