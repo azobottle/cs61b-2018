@@ -3,7 +3,7 @@ package hw2;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private WeightedQuickUnionUF uf;
+    private WeightedQuickUnionUF uf1, uf2;
     private boolean percolate;
     private int N;
     private int sentinal;
@@ -15,7 +15,8 @@ public class Percolation {
             throw new java.lang.IllegalArgumentException();
         }
         sentinal = N * N + 1;
-        uf = new WeightedQuickUnionUF(sentinal + 1);
+        uf1 = new WeightedQuickUnionUF(N * N + 1);
+        uf2 = new WeightedQuickUnionUF(N * N + 1);
         percolate = false;
         this.N = N;
         numbs = 0;
@@ -33,23 +34,28 @@ public class Percolation {
         is_open[row][col] = true;
         numbs++;
         if (row == 0) {
-            uf.union(pos, sentinal);
+            uf1.union(pos, sentinal);
         }
-
+        if (row == N - 1) {
+            uf2.union(pos, sentinal);
+        }
         if (col > 0 && isOpen(row, col - 1)) {
-            uf.union(pos, pos - 1);
+            uf1.union(pos, pos - 1);
+            uf2.union(pos, pos - 1);
         }
         if (col < N - 1 && isOpen(row, col + 1)) {
-            uf.union(pos, pos + 1);
+            uf1.union(pos, pos + 1);
+            uf2.union(pos, pos + 1);
         }
         if (row > 0 && isOpen(row - 1, col)) {
-            uf.union(pos, pos - N);
-
+            uf1.union(pos, pos - N);
+            uf2.union(pos, pos - N);
         }
         if (row < N - 1 && isOpen(row + 1, col)) {
-            uf.union(pos, pos + N);
+            uf1.union(pos, pos + N);
+            uf2.union(pos, pos + N);
         }
-        if (uf.connected(pos, sentinal)) {
+        if (uf1.connected(pos, sentinal) && uf2.connected(pos, sentinal)) {
             percolate = true;
         }
     }     // open the site (row, col) if it is not open already
@@ -65,7 +71,7 @@ public class Percolation {
         if (row < 0 || row >= N || col < 0 || col >= N) {
             throw new java.lang.IllegalArgumentException();
         }
-        return uf.connected(row * N + col, sentinal);
+        return uf1.connected(row * N + col, sentinal);
     }// is the site (row, col) full?
 
     public int numberOfOpenSites() {
