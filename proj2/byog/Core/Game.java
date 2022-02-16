@@ -338,7 +338,7 @@ public class Game implements Serializable {
             shufflelist(ran, un_on);
             shufflelist(ran, con);
             for (Room r1 : un_on) {
-                boolean f = false;
+                boolean f = false;//成功连接成功就打乱两个链表,重新开始
                 for (Room r2 : con) {
                     Room hw = calHelperHW(r1, r2, ran);
                     if (drawable(hw)) {
@@ -624,18 +624,6 @@ public class Game implements Serializable {
             }
         }
         WORLD[x][y] = Tileset.FLOOR;
-    }
-
-
-    private static Room extend_hw(Room hw, boolean hw_is_vertical) {
-        if (hw_is_vertical) {
-            hw.y = (hw.y - 2 + HEIGHT) % HEIGHT;
-            hw.h = (hw.h + 4 + HEIGHT) % HEIGHT;
-        } else {
-            hw.x = (hw.x - 2 + WIDTH) % WIDTH;
-            hw.w = (hw.w + 4 + WIDTH) % WIDTH;
-        }
-        return hw;
     }
 
     private static Game loadGame() {
