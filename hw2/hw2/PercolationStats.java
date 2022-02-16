@@ -12,7 +12,8 @@ public class PercolationStats {
         if (N <= 0 || T <= 0) {
             throw new java.lang.IllegalArgumentException();
         }
-        double[] t = new double[N];
+        times=T;
+        double[] t = new double[times];
         for (double r : t) {
             Percolation p = pf.make(N);
             while (!p.percolates()) {
