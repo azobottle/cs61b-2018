@@ -14,12 +14,12 @@ public class PercolationStats {
         }
         times=T;
         double[] t = new double[times];
-        for (double r : t) {
+        for (int i = 0; i < t.length; i++) {
             Percolation p = pf.make(N);
             while (!p.percolates()) {
                 p.open(StdRandom.uniform(N), StdRandom.uniform(N));
             }
-            r = 1.0 * p.numberOfOpenSites() / N;
+            t[i] = 1.0 * p.numberOfOpenSites() / (N * N);
         }
         mean = StdStats.mean(t);
         stddev = StdStats.stddev(t);
