@@ -69,7 +69,7 @@ public class Percolation {
 
     public boolean isFull(int row, int col) {
         if (row < 0 || row >= N || col < 0 || col >= N) {
-            throw new java.lang.IllegalArgumentException();
+            throw new java.lang.IndexOutOfBoundsException();
         }
         return uf1.connected(row * N + col, sentinal);
     }// is the site (row, col) full?
