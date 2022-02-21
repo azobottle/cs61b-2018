@@ -9,7 +9,7 @@ import java.util.Set;
  *
  * @author Your name here
  */
-public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterable<K> {
+public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     private class Node {
         /* (K, V) pair stored in this Node. */
@@ -224,10 +224,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
 
     @Override
     public Iterator<K> iterator() {
-        return new myIterator();
+        throw new UnsupportedOperationException();
+       // return new myIterator();
     }
 
-    private class myIterator implements Iterator<K> {
+    /*private class myIterator implements Iterator<K> {
         public myIterator() {
         }
 
@@ -236,5 +237,5 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
 
         public K next() {
         }
-    }
+    }*/
 }
