@@ -224,18 +224,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     @Override
     public Iterator<K> iterator() {
-        throw new UnsupportedOperationException();
-       // return new myIterator();
+        return keySet().iterator();
     }
 
-    /*private class myIterator implements Iterator<K> {
-        public myIterator() {
-        }
-
-        public boolean hasNext() {
-        }
-
-        public K next() {
-        }
-    }*/
 }
