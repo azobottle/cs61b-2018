@@ -125,23 +125,24 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
      */
     @Override
     public V remove(K key) {
-        Node p = findparent_by_key(root, key);
+        Node p = findparent_by_key(root, key);//find the parent
         V ans;
         if (p == null) {
-            if (root.key == key) {
+            if (root.key == key) {//root node
                 ans = root.value;
-            } else {
+                modify_imitate_remove(root);
+            } else {//didn't find
                 ans = null;
             }
         } else {
-            if (p.left != null && p.left.key == key) {
+            if (p.left != null && p.left.key == key) {//left child
                 Node c = p.left;
                 ans = c.value;
-                p.left = newNode_while_romove(c);
-            } else {
+                p.left = modify_imitate_remove(c);
+            } else {//right child
                 Node c = p.right;
                 ans = c.value;
-                p.right = newNode_while_romove(c);
+                p.right = modify_imitate_remove(c);
             }
         }
         return ans;
@@ -165,20 +166,20 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
                 if (c.value != value) {
                     return null;
                 }
-                p.left = newNode_while_romove(c);
+                p.left = modify_imitate_remove(c);
             } else {
                 Node c = p.right;
                 if (c.value != value) {
                     return null;
                 }
-                p.right = newNode_while_romove(c);
+                p.right = modify_imitate_remove(c);
             }
         }
         return value;
     }
 
-    private Node findparent_by_key(Node p, K key) {//find the parent of the node which is going to be removed
-        if (p == null || p.key.compareTo(root.key) == 0) {
+    private Node findparent_by_key(Node p, final K key) {//find the parent of the node which is going to be removed
+        if (p == null || key.compareTo(root.key) == 0) {
             return null;
         } else if ((p.left != null && p.left.key.compareTo(key) == 0)
                 || (p.right != null && p.right.key.compareTo(key) == 0)) {
@@ -192,34 +193,37 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         return findparent_by_key(p.right, key);
     }
 
-    private Node newNode_while_romove(Node p) {
-        if (p.left == null && p.right == null) {
+    private Node modify_imitate_remove(final Node p) {
+        if (p.left == null && p.right == null) {//0 child
             return null;
-        } else if (p.left == null) {
-            p.key = p.right.key;
-            p.value = p.right.value;
-            p.right = null;
+        } else if (p.left == null) {//1 child
+            copyContent(p, p.right);
         } else if (p.right == null) {
-            p.key = p.left.key;
-            p.value = p.left.value;
-            p.left = null;
+            copyContent(p, p.left);
         } else {
-            Node q = p.left;
+            Node l = p.left;
             Node d, dp;
-            if (q.right == null) {
-                d = q;
+            if (l.right == null) {
+                d = l;
                 dp = p;
-                dp.left = newNode_while_romove(d);
+                copyContent(p, d);
+                dp.left = modify_imitate_remove(d);
             } else {
-                while (q.right.right != null) {
-                    q = q.right;
+                while (l.right.right != null) {
+                    l = l.right;
                 }
-                dp = q;
-                d = q.right;
-                dp.right = newNode_while_romove(d);
+                dp = l;
+                d = l.right;
+                copyContent(p, d);
+                dp.right = modify_imitate_remove(d);
             }
         }
         return p;
+    }
+
+    private void copyContent(Node des, Node src) {
+        des.value = src.value;
+        des.key = src.key;
     }
 
     @Override

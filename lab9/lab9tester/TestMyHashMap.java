@@ -81,6 +81,19 @@ public class TestMyHashMap {
         assertTrue(b.containsKey("hi") && b.get("hi") != null);
     }
 
+    @Test
+    public void romoveTest() {
+        MyHashMap<String, Integer> b = new MyHashMap<String, Integer>();
+        b.put("hi", 1);
+        b.remove("hi");
+        assertFalse(b.containsKey("hi"));
+        b.put("world", 2);
+        b.remove("world", 1);
+        assertTrue(b.containsKey("world"));
+        b.remove("world", 2);
+        assertFalse(b.containsKey("world"));
+    }
+
     /*
      * Test for general functionality and that the properties of Maps hold.
      */
