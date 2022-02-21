@@ -159,6 +159,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (p == null) {
             if (!(root.key == key && root.value == value)) {
                 return null;
+            }else {
+                modify_imitate_remove(root);
+                return root.value;
             }
         } else {
             if (p.left != null && p.left.key == key) {
