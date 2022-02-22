@@ -175,8 +175,8 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         T ans = contents[1].myItem;
         swap(1, size);
         contents[size] = null;
-        size--;
         sink(1);
+        size--;
         return ans;
     }
 
