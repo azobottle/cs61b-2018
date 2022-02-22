@@ -91,15 +91,15 @@ public class TestBSTMap {
     public void removeTest() {
         BSTMap<Integer, Character> b = new BSTMap<Integer, Character>();
         b.put(4, 'd');
-        b.put(2, 'b');
+       /* b.put(2, 'b');
         b.put(1, 'a');
         b.put(3, 'c');
         b.put(6, 'f');
         b.put(5, 'e');
-        b.put(7, 'g');
+        b.put(7, 'g');*/
         //b.remove(2);
         //assertFalse(b.containsKey(2));
-        b.remove(4);
+        b.remove(4,'d');
         assertFalse(b.containsKey(4));
     }
 

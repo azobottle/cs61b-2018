@@ -130,7 +130,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (p == null) {
             if (root.key == key) {//root node
                 ans = root.value;
-                modify_imitate_remove(root);
+                root = modify_imitate_remove(root);
             } else {//didn't find
                 ans = null;
             }
@@ -159,9 +159,8 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (p == null) {
             if (!(root.key == key && root.value == value)) {
                 return null;
-            }else {
-                modify_imitate_remove(root);
-                return root.value;
+            } else {
+                root = modify_imitate_remove(root);
             }
         } else {
             if (p.left != null && p.left.key == key) {
