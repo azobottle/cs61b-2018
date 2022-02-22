@@ -200,8 +200,10 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             return null;
         } else if (p.left == null) {//1 child
             copyContent(p, p.right);
+            p.right=p.right.right;
         } else if (p.right == null) {
             copyContent(p, p.left);
+            p.left = p.left.left;
         } else {
             Node l = p.left;
             Node d, dp;
