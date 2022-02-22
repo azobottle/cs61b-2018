@@ -1,8 +1,6 @@
 package lab9tester;
 
 import static org.junit.Assert.*;
-
-import lab9.MyHashMap;
 import org.junit.Test;
 import lab9.BSTMap;
 

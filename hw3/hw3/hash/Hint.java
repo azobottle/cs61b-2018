@@ -8,5 +8,6 @@ public class Hint {
             System.out.println(i + "th power: " + x);
             x = x * 256;
         }
+        System.out.println(256*256*256*128*2+" "+Integer.MAX_VALUE);
     }
 } 
