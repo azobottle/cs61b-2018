@@ -1,7 +1,7 @@
 package lab11.graphs;
 
 /**
- *  @author Josh Hug
+ * @author Josh Hug
  */
 public class MazeAStarPath extends MazeExplorer {
     private int s;
@@ -18,20 +18,30 @@ public class MazeAStarPath extends MazeExplorer {
         edgeTo[s] = s;
     }
 
-    /** Estimate of the distance from v to the target. */
+    /**
+     * Estimate of the distance from v to the target.
+     */
     private int h(int v) {
-        return -1;
+        return Math.abs(maze.toX(v) - maze.toX(t)) + Math.abs(maze.toY(v) - maze.toY(t));
     }
 
-    /** Finds vertex estimated to be closest to target. */
+    /**
+     * Finds vertex estimated to be closest to target.
+     */
     private int findMinimumUnmarked() {
         return -1;
         /* You do not have to use this method. */
     }
 
-    /** Performs an A star search from vertex s. */
+    /**
+     * Performs an A star search from vertex s.
+     */
     private void astar(int s) {
-        // TODO
+
+        marked[s]=true;
+        while (!q.isEmpty()){
+
+        }
     }
 
     @Override
