@@ -93,15 +93,15 @@ public class Word implements WorldState {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object y) {
+        if (this == y) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (y == null || getClass() != y.getClass()) {
             return false;
         }
 
-        Word word1 = (Word) o;
+        Word word1 = (Word) y;
 
         if (word != null ? !word.equals(word1.word) : word1.word != null) {
             return false;
