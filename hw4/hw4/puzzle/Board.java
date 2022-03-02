@@ -116,6 +116,17 @@ public class Board implements WorldState {
         }
         return true;
     }
+    @Override
+    public int hashCode(){
+        int sum=0;
+        int N = this.size();
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                sum+=tiles[i][j]*tiles[i][j];
+            }
+        }
+        return sum;
+    }
 
     /**
      * Returns the string representation of the board.
