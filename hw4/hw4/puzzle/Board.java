@@ -104,7 +104,7 @@ public class Board implements WorldState {
         }
         Board b = (Board) y;
         int N = this.size();
-        if (N != this.tiles[0].length) {
+        if (N != b.size()) {
             return false;
         }
         for (int i = 0; i < N; i++) {
