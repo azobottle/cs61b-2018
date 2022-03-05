@@ -74,6 +74,14 @@ public class Rasterer {
                 break;
             }
         }
+        if (ullon < MapServer.ROOT_ULLON) {
+            results.put("raster_ul_lon", MapServer.ROOT_ULLON);
+            ul_x = 0;
+        }
+        if (lrlon > MapServer.ROOT_LRLON) {
+            results.put("raster_lr_lon", MapServer.ROOT_LRLON);
+            lr_x = len - 1;
+        }
         for (int i = 0; i < len; i++) {
             if ((MapServer.ROOT_ULLAT - a_LatDPP * 256 * i) >= ullat &&
                     ullat > (MapServer.ROOT_ULLAT - a_LatDPP * 256 * (i + 1))) {
@@ -86,6 +94,14 @@ public class Rasterer {
                 results.put("raster_lr_lat", MapServer.ROOT_ULLAT - a_LatDPP * 256 * (i + 1));
                 break;
             }
+        }
+        if (ullat > MapServer.ROOT_ULLAT) {
+            results.put("raster_ul_lat", MapServer.ROOT_ULLAT);
+            ul_y = 0;
+        }
+        if (lrlat < MapServer.ROOT_LRLAT) {
+            results.put("raster_lr_lat", MapServer.ROOT_LRLAT);
+            lr_y = len - 1;
         }
         if (ul_x < 0 || ul_y < 0 || lr_x < 0 || lr_y < 0) {
             results.put("query_success", false);
