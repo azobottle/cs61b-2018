@@ -47,10 +47,16 @@ public class Router {
                         fringe.add(new searchnode(id, min, min.from_st, g, dest));
                         marked.add(id);
                     } else {
+                        searchnode tar = null;
                         for (searchnode n : fringe) {
                             if (n.id == id) {
-                                n.relax(min, g);
+                                tar = n;
                             }
+                        }
+                        if(tar!=null){
+                            fringe.remove(tar);
+                            tar.relax(min, g);
+                            fringe.add(tar);
                         }
                     }
                 }
@@ -108,13 +114,7 @@ public class Router {
         static class myComparator implements Comparator<searchnode> {
             @Override
             public int compare(searchnode o1, searchnode o2) {
-                if (o1.heuristic() > o2.heuristic()) {
-                    return 1;
-                } else if (o1.heuristic() < o2.heuristic()) {
-                    return -1;
-                } else {
-                    return 0;
-                }
+                return Double.compare(o1.heuristic(), o2.heuristic());
             }
         }
     }
