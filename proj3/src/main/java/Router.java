@@ -28,13 +28,12 @@ public class Router {
                                           double destlon, double destlat) {
         long st = g.closest(stlon, stlat), dest = g.closest(destlon, destlat);
         LinkedList<Long> ans = new LinkedList<>();
-        List<searchnode> fringe = new LinkedList<>();
+        PriorityQueue<searchnode> fringe = new PriorityQueue<>(new searchnode.myComparator());
         HashSet<Long> marked = new HashSet<>();
         marked.add(st);
         fringe.add(new searchnode(st, null, 0, g, dest));
-
         while (true) {
-            searchnode min = delmin(fringe);
+            searchnode min = fringe.remove();
             if (min.is_goal()) {
                 searchnode t = min;
                 while (t != null) {
@@ -104,6 +103,13 @@ public class Router {
                 from_st = 0;
             }
             to_dest = g.distance(id, dest);
+        }
+
+        static class myComparator implements Comparator<searchnode> {
+            @Override
+            public int compare(searchnode o1, searchnode o2) {
+                return (int) (10000 * (o1.heuristic() - o2.heuristic()));
+            }
         }
     }
 
