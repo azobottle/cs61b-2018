@@ -108,7 +108,13 @@ public class Router {
         static class myComparator implements Comparator<searchnode> {
             @Override
             public int compare(searchnode o1, searchnode o2) {
-                return (int) (10000 * (o1.heuristic() - o2.heuristic()));
+                if (o1.heuristic() > o2.heuristic()) {
+                    return 1;
+                } else if (o1.heuristic() < o2.heuristic()) {
+                    return -1;
+                } else {
+                    return 0;
+                }
             }
         }
     }
