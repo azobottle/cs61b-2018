@@ -129,7 +129,7 @@ public class Router {
                 DISTANCE += g.distance(route.get(0), route.get(1));
                 BEARING = g.bearing(route.get(0), route.get(1));
             } else {
-                NavigationDirection t=NavigationDirection.fromString(DIRECTION + " on " + WAY + " and continue for " + DISTANCE + " miles.");
+                NavigationDirection t = NavigationDirection.fromString(DIRECTION + " on " + WAY + " and continue for " + DISTANCE + " miles.");
                 ans.add(t);
                 double thisbearing = g.bearing(route.get(0), route.get(1));
                 DIRECTION = getDirection(BEARING, thisbearing);
@@ -152,6 +152,13 @@ public class Router {
         }
         double d = n - o;
         String ans = null;
+        if (Math.abs(d) > 180) {
+            if (d > 0) {
+                d = -(360 - d);
+            } else {
+                d = 360 + d;
+            }
+        }
         if (Math.abs(d) <= 15) {
             ans = "Go straight";
         } else if (Math.abs(d) <= 30) {
