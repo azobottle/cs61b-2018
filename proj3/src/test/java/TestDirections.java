@@ -9,8 +9,10 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/** Test of the written driving directions part of the assignment. This part of the assignment is 
-  * optional and not worth any credit, and these tests should be thought of as just for fun.*/
+/**
+ * Test of the written driving directions part of the assignment. This part of the assignment is
+ * optional and not worth any credit, and these tests should be thought of as just for fun.
+ */
 public class TestDirections {
     private static final String PATHS_FILE = "path_results.txt";
     private static final String RESULTS_FILE = "directions_results.txt";
@@ -28,7 +30,7 @@ public class TestDirections {
         List<List<Long>> paths = pathsFromFile();
         List<List<Router.NavigationDirection>> expectedResults = resultsFromFile();
 
-        for (int i =0; i < NUM_TESTS; i++) {
+        for (int i = 0; i < NUM_TESTS; i++) {
             System.out.println(String.format("Running test: %d", i));
             List<Long> path = paths.get(i);
             List<Router.NavigationDirection> actual = Router.routeDirections(graph, path);

@@ -45,7 +45,6 @@ public class Rasterer {
      * forget to set this to true on success! <br>
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
-        System.out.println(params);
         Map<String, Object> results = new HashMap<>();
         double h = params.get("h"), w = params.get("w"), lrlat = params.get("lrlat"),
                 lrlon = params.get("lrlon"),
@@ -110,6 +109,7 @@ public class Rasterer {
         results.put("render_grid", a);
         return results;
     }
+
     private int calDepth(double LDPP) {
         int dep = 0;
         while (dep < 7) {
