@@ -41,7 +41,7 @@ public class GraphBuildingHandler extends DefaultHandler {
         boolean flag = false;
         LinkedList<Long> ids=new LinkedList<>();
         String highwaytype;
-        String name;
+        String name="";
         double maxspeed;
     }
 
@@ -167,5 +167,4 @@ public class GraphBuildingHandler extends DefaultHandler {
             }
         }
     }
-
 }

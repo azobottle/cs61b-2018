@@ -50,13 +50,6 @@ public class Rasterer {
         double h = params.get("h"), w = params.get("w"), lrlat = params.get("lrlat"),
                 lrlon = params.get("lrlon"),
                 ullat = params.get("ullat"), ullon = params.get("ullon");
-        /*if (ullon < MapServer.ROOT_ULLON || ullat > MapServer.ROOT_ULLAT ||
-                lrlon > MapServer.ROOT_LRLON || lrlat < MapServer.ROOT_LRLAT) {
-            results.put("query_success", false);
-            return results;
-        } else {
-            results.put("query_success", true);
-        }*/
         int dep = calDepth((lrlon - ullon) / w);
         results.put("depth", dep);
         double a_LonDPP = MLonDPP * Math.pow(0.5, dep), a_LatDPP = MlatDPP * Math.pow(0.5, dep);
@@ -117,16 +110,6 @@ public class Rasterer {
         results.put("render_grid", a);
         return results;
     }
-
-    /*private int findCoordinate(double base, double stepsize, double goal1, double goal2,
-                               String s1, String s2, Map<String, Object> result, int len) {
-        for (int i = 0; i < len; i++) {
-            if (goal1 < (base + stepsize * i)) {
-
-            }
-        }
-    }*/
-
     private int calDepth(double LDPP) {
         int dep = 0;
         while (dep < 7) {

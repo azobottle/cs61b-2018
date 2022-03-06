@@ -200,6 +200,9 @@ public class GraphDB {
         return Math.toDegrees(Math.atan2(y, x));
     }
 
+    public static void main(String[] args) {
+        System.out.println(bearing(0,0,-1,1));
+    }
     /**
      * Returns the vertex closest to the given longitude and latitude.
      *
@@ -238,5 +241,14 @@ public class GraphDB {
      */
     double lat(long v) {
         return Map_Node.get(v).lat;
+    }
+
+    String getwayname(long v, long w) {
+        for (Adjcency adj : Map_Adj.get(v)) {
+            if (adj.id == w) {
+                return adj.name;
+            }
+        }
+        return "didn't found";
     }
 }
