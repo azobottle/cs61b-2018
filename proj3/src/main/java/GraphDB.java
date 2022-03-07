@@ -96,6 +96,10 @@ public class GraphDB {
         Map_Adj.get(id2).add(adj1);
     }
 
+    public Node getNode(long id) {
+        return Map_Node.get(id);
+    }
+
     /**
      * Helper to process strings into their "cleaned" form, ignoring punctuation and capitalization.
      *
@@ -201,8 +205,9 @@ public class GraphDB {
     }
 
     public static void main(String[] args) {
-        System.out.println(bearing(0,0,-1,1));
+        System.out.println(bearing(0, 0, -1, 1));
     }
+
     /**
      * Returns the vertex closest to the given longitude and latitude.
      *

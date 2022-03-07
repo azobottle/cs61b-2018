@@ -23,41 +23,34 @@ public class Router {
      * @param destlat The latitude of the destination location.
      * @return A list of node id's in the order visited on the shortest path.
      */
+    private static GraphDB graph;
+    private static long st;
+    private static long dest;
+
 
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        long st = g.closest(stlon, stlat), dest = g.closest(destlon, destlat);
+        graph = g;
+        st = g.closest(stlon, stlat);
+        dest = g.closest(destlon, destlat);
         LinkedList<Long> ans = new LinkedList<>();
-        PriorityQueue<searchnode> fringe = new PriorityQueue<>(new searchnode.myComparator());
+        PriorityQueue<searchnode> fringe = new PriorityQueue<>();
         HashSet<Long> marked = new HashSet<>();
-        marked.add(st);
-        fringe.add(new searchnode(st, null, 0, g, dest));
+        fringe.add(new searchnode(st, null, 0));
         while (true) {
-            searchnode min = fringe.remove();
-            if (min.is_goal()) {
-                searchnode t = min;
+            searchnode top = fringe.remove();
+            marked.add(top.id);
+            if (top.is_goal()) {
+                searchnode t = top;
                 while (t != null) {
                     ans.addFirst(t.id);
                     t = t.pre;
                 }
                 break;
             } else {
-                for (long id : g.adjacent(min.id)) {
+                for (long id : g.adjacent(top.id)) {
                     if (!marked.contains(id)) {
-                        fringe.add(new searchnode(id, min, min.from_st, g, dest));
-                        marked.add(id);
-                    } else {
-                        searchnode tar = null;
-                        for (searchnode n : fringe) {
-                            if (n.id == id) {
-                                tar = n;
-                            }
-                        }
-                        if(tar!=null){
-                            fringe.remove(tar);
-                            tar.relax(min, g);
-                            fringe.add(tar);
-                        }
+                        fringe.add(new searchnode(id, top));
                     }
                 }
             }
@@ -65,57 +58,36 @@ public class Router {
         return ans;
     }
 
-    private static searchnode delmin(List<searchnode> fringe) {
-        int idx = 0;
-        double min_he = Double.MAX_VALUE;
-        for (int i = 0; i < fringe.size(); i++) {
-            double he = fringe.get(i).heuristic();
-            if (he < min_he) {
-                idx = i;
-                min_he = he;
-            }
-        }
-        return fringe.remove(idx);
-    }
-
-    private static class searchnode {
+    private static class searchnode implements Comparable<searchnode> {
         long id;
         searchnode pre;
-        double from_st;
-        double to_dest;
+        double distanceSt;
+        double distanceDest;
+        double priority;
 
         boolean is_goal() {
-            return to_dest == 0;
+            return distanceDest == 0;
         }
 
-        double heuristic() {
-            return from_st + to_dest;
-        }
-
-        void relax(searchnode min, GraphDB g) {
-            double t_from_st = min.from_st + g.distance(id, min.id);
-            if (t_from_st < from_st) {
-                from_st = t_from_st;
-                pre = min;
-            }
-        }
-
-        searchnode(long id, searchnode pre, double pre_from_st, GraphDB g, long dest) {
+        searchnode(long id, searchnode pre) {
             this.id = id;
             this.pre = pre;
-            if (pre != null) {
-                from_st = pre_from_st + g.distance(pre.id, id);
-            } else {
-                from_st = 0;
-            }
-            to_dest = g.distance(id, dest);
+            distanceSt = pre.distanceSt + graph.distance(id, pre.id);
+            distanceDest = graph.distance(id, dest);
+            priority = distanceSt + distanceDest;
         }
 
-        static class myComparator implements Comparator<searchnode> {
-            @Override
-            public int compare(searchnode o1, searchnode o2) {
-                return Double.compare(o1.heuristic(), o2.heuristic());
-            }
+        searchnode(long id, searchnode pre, double distanceSt) {
+            this.id = id;
+            this.pre = pre;
+            this.distanceSt = distanceSt;
+            distanceDest = graph.distance(id, dest);
+            priority = distanceSt + distanceDest;
+        }
+
+        @Override
+        public int compareTo(searchnode o) {
+            return Double.compare(this.priority, o.priority);
         }
     }
 
