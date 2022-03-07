@@ -33,48 +33,36 @@ public class Router {
         graph = g;
         st = g.closest(stlon, stlat);
         dest = g.closest(destlon, destlat);
-        LinkedList<Long> ans = new LinkedList<>();
         PriorityQueue<searchnode> fringe = new PriorityQueue<>();
-        HashSet<Long> marked = new HashSet<>();
-        fringe.add(new searchnode(st, null, 0));
-        while (true) {
-            searchnode top = fringe.remove();
-            marked.add(top.id);
-            if (top.is_goal()) {
-                searchnode t = top;
-                while (t != null) {
-                    ans.addFirst(t.id);
-                    t = t.pre;
-                }
-                break;
-            } else {
-                for (long id : g.adjacent(top.id)) {
-                    if (!marked.contains(id)) {
-                        fringe.add(new searchnode(id, top));
-                    }
+        Map<Long, Boolean> marked = new HashMap<>();
+        fringe.offer(new searchnode(st, null, 0));
+        while (!fringe.isEmpty() && !fringe.peek().is_goal()) {
+            searchnode v = fringe.poll();
+            marked.put(v.id, true);
+            for (long w : g.adjacent(v.id)) {
+                if (!marked.containsKey(w) || !marked.get(w)) {
+                    fringe.add(new searchnode(w, v, v.distanceSt + g.distance(v.id, w)));
                 }
             }
+        }
+        LinkedList<Long> ans = new LinkedList<>();
+        searchnode pos = fringe.peek();
+        while (pos != null) {
+            ans.addFirst(pos.id);
+            pos = pos.pre;
         }
         return ans;
     }
 
     private static class searchnode implements Comparable<searchnode> {
-        long id;
-        searchnode pre;
-        double distanceSt;
-        double distanceDest;
-        double priority;
+        private long id;
+        private searchnode pre;
+        private double distanceSt;
+        private double distanceDest;
+        private double priority;
 
         boolean is_goal() {
             return distanceDest == 0;
-        }
-
-        searchnode(long id, searchnode pre) {
-            this.id = id;
-            this.pre = pre;
-            distanceSt = pre.distanceSt + graph.distance(id, pre.id);
-            distanceDest = graph.distance(id, dest);
-            priority = distanceSt + distanceDest;
         }
 
         searchnode(long id, searchnode pre, double distanceSt) {
