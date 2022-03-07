@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,44 +34,47 @@ public class Router {
         graph = g;
         st = g.closest(stlon, stlat);
         dest = g.closest(destlon, destlat);
-        PriorityQueue<searchnode> fringe = new PriorityQueue<>();
-        Map<Long, Boolean> marked = new HashMap<>();
-        fringe.offer(new searchnode(st, null, 0));
-        while (!fringe.isEmpty() && !fringe.peek().is_goal()) {
-            searchnode v = fringe.poll();
-            marked.put(v.id, true);
-            for (long w : g.adjacent(v.id)) {
-                if (!marked.containsKey(w) || !marked.get(w)) {
-                    fringe.add(new searchnode(w, v, v.distanceSt + g.distance(v.id, w)));
+        Map<Long, Double> id_disST = new HashMap<>();
+        Map<Long, Long> id_id = new HashMap<>();
+        Set<Long> marked = new HashSet<>();
+        PriorityQueue<searchnode> pq = new PriorityQueue<>();
+        pq.offer(new searchnode(st, g.distance(st, dest)));
+        id_disST.put(st, (double) 0);
+        id_id.put(st, null);
+        while (!pq.isEmpty() && !pq.peek().is_goal()) {
+            Long v = pq.poll().id;
+            marked.add(v);
+            for (long w : g.adjacent(v)) {
+                if (!marked.contains(w)) {
+                    double disST = id_disST.get(v) + graph.distance(v, w);
+                    pq.add(new searchnode(w, +disST + g.distance(w, dest)));
+                    if (!id_disST.containsKey(w) || id_disST.get(w) < disST) {
+                        id_disST.put(w, disST);
+                        id_id.put(w, v);
+                    }
                 }
             }
         }
         LinkedList<Long> ans = new LinkedList<>();
-        searchnode pos = fringe.peek();
-        while (pos != null) {
-            ans.addFirst(pos.id);
-            pos = pos.pre;
+        Long p = pq.peek().id;
+        while (p != null) {
+            ans.addFirst(p);
+            p = id_id.get(p);
         }
         return ans;
     }
 
     private static class searchnode implements Comparable<searchnode> {
         private long id;
-        private searchnode pre;
-        private double distanceSt;
-        private double distanceDest;
         private double priority;
 
-        boolean is_goal() {
-            return distanceDest == 0;
+        searchnode(long id, double priority) {
+            this.id = id;
+            this.priority = priority;
         }
 
-        searchnode(long id, searchnode pre, double distanceSt) {
-            this.id = id;
-            this.pre = pre;
-            this.distanceSt = distanceSt;
-            distanceDest = graph.distance(id, dest);
-            priority = distanceSt + distanceDest;
+        public boolean is_goal() {
+            return id == dest;
         }
 
         @Override
