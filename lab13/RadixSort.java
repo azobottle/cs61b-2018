@@ -16,18 +16,15 @@ public class RadixSort {
      * @param asciis String[] that needs to be sorted
      * @return String[] the sorted array
      */
-    private static Queue<String>[] my_queues = new Queue[256];
-    private static int max_length = Integer.MIN_VALUE;
+
 
     public static String[] sort(String[] asciis) {
         String[] ans = new String[asciis.length];
         System.arraycopy(asciis, 0, ans, 0, asciis.length);
 
+        int max_length = Integer.MIN_VALUE;
         for (String ascii : asciis) {
             max_length = max_length > ascii.length() ? max_length : asciis.length;
-        }
-        for (int i = 0; i < my_queues.length; i++) {
-            my_queues[i] = new LinkedList<>();
         }
         for (int i = max_length - 1; i >= 0; i--) {
             sortHelperLSD(ans, i);
@@ -61,19 +58,30 @@ public class RadixSort {
      * @param index  The position to sort the Strings on.
      */
     private static void sortHelperLSD(String[] asciis, int index) {
+        int[] counts = new int[256];
+        int[] starts = new int[256];
         for (String ascii : asciis) {
             if (index < ascii.length()) {
-                my_queues[ascii.charAt(index)].offer(ascii);
+                counts[ascii.charAt(index)]++;
             } else {
-                my_queues[0].offer(ascii);
+                counts[0]++;
             }
         }
-        int idx = 0;
-        for (Queue<String> queue : my_queues) {
-            while (!queue.isEmpty()) {
-                asciis[idx++] = queue.poll();
+        int pos = 0;
+        for (int i = 0; i < starts.length; i++) {
+            starts[i] = pos;
+            pos += counts[i];
+        }
+        String[] dup = new String[asciis.length];
+        System.arraycopy(asciis, 0, dup, 0, asciis.length);
+        for (String ascii : asciis) {
+            if (index < ascii.length()) {
+                dup[starts[ascii.charAt(index)]++] = ascii;
+            } else {
+                dup[starts[0]++] = ascii;
             }
         }
+        System.arraycopy(dup, 0, asciis, 0, asciis.length);
     }
 
     /**
