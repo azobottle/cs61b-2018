@@ -6,7 +6,7 @@ public class StrangeBitwiseGenerator implements Generator {
     private int period;
     private int state = -1;
 
-    StrangeBitwiseGenerator(int period) {
+    public StrangeBitwiseGenerator(int period) {
         this.period = period;
     }
 
