@@ -10,7 +10,7 @@ public class SeamCarver {
     }
 
     public Picture picture() {
-        return picture;
+        return new Picture(picture);
     }                       // current picture
 
     public int width() {
@@ -86,9 +86,9 @@ public class SeamCarver {
     private int getMinParent(int i, int j, double[][] m) {
         int ans = -1;
         if (j == 0) {
-            ans = m[i - 1][j] < m[i - 1][(j + 1 + width()) % width()] ? j : j + 1;
+            ans = m[i - 1][j] < m[i - 1][(j + 1 + width()) % width()] ? j : (j + 1 + width()) % width();
         } else if (j == m[0].length - 1) {
-            ans = m[i - 1][j] < m[i - 1][(j - 1 + width()) % width()] ? j : j - 1;
+            ans = m[i - 1][j] < m[i - 1][(j - 1 + width()) % width()] ? j : (j - 1 + width()) % width();
         } else {
             double t = Double.MAX_VALUE;
             if (m[i - 1][j - 1] < t) {
