@@ -3,22 +3,22 @@ import edu.princeton.cs.algs4.Picture;
 import java.awt.Color;
 
 public class SeamCarver {
-    private Picture currentPicture;
+    private Picture picture;
 
     public SeamCarver(Picture picture) {
-        currentPicture = picture;
+        this.picture = picture;
     }
 
     public Picture picture() {
-        return currentPicture;
+        return picture;
     }                       // current picture
 
     public int width() {
-        return currentPicture.width();
+        return picture.width();
     }                         // width of current picture
 
     public int height() {
-        return currentPicture.height();
+        return picture.height();
     }                      // height of current picture
 
     public double energy(int x, int y) {
@@ -26,24 +26,21 @@ public class SeamCarver {
             throw new java.lang.IndexOutOfBoundsException();
         }
         int xl = (x - 1 + width()) % width(), xr = (x + 1 + width()) % width(), yu = (y - 1 + height()) % height(), yd = (y + 1 + height()) % height();
-        Color xlc = currentPicture.get(xl, y), xrc = currentPicture.get(xr, y), yuc = currentPicture.get(x, yu), ydc = currentPicture.get(x, yd);
+        Color xlc = picture.get(xl, y), xrc = picture.get(xr, y), yuc = picture.get(x, yu), ydc = picture.get(x, yd);
         double dx2 = Math.pow(xlc.getRed() - xrc.getRed(), 2) + Math.pow(xlc.getGreen() - xrc.getGreen(), 2) + Math.pow(xlc.getBlue() - xrc.getBlue(), 2);
         double dy2 = Math.pow(yuc.getRed() - ydc.getRed(), 2) + Math.pow(yuc.getGreen() - ydc.getGreen(), 2) + Math.pow(yuc.getBlue() - ydc.getBlue(), 2);
         return dx2 + dy2;
     }      // energy of pixel at column x and row y
 
     public int[] findHorizontalSeam() {
-        Picture origin = currentPicture;
         Picture temp = new Picture(height(), width());
         for (int i = 0; i < height(); i++) {
             for (int j = 0; j < width(); j++) {
-                temp.set(i, j, origin.get(j, i));
+                temp.set(i, j, picture.get(j, i));
             }
         }
-        currentPicture = temp;
-        int[] ans = findVerticalSeam();
-        currentPicture = origin;
-        if(ans.length>width()){
+        int[] ans = new SeamCarver(temp).findVerticalSeam();
+        if (ans.length > width()) {
             throw new java.lang.IllegalArgumentException();
         }
         return ans;
@@ -80,7 +77,7 @@ public class SeamCarver {
             pos = parent[lawyer--][pos];
         }
         ans[idx] = pos;
-        if(ans.length>height()){
+        if (ans.length > height()) {
             throw new java.lang.IllegalArgumentException();
         }
         return ans;
@@ -89,9 +86,9 @@ public class SeamCarver {
     private int getMinParent(int i, int j, double[][] m) {
         int ans = -1;
         if (j == 0) {
-            ans = m[i - 1][j] < m[i - 1][j + 1] ? j : j + 1;
+            ans = m[i - 1][j] < m[i - 1][(j + 1 + width()) % width()] ? j : j + 1;
         } else if (j == m[0].length - 1) {
-            ans = m[i - 1][j] < m[i - 1][j - 1] ? j : j - 1;
+            ans = m[i - 1][j] < m[i - 1][(j - 1 + width()) % width()] ? j : j - 1;
         } else {
             double t = Double.MAX_VALUE;
             if (m[i - 1][j - 1] < t) {
@@ -110,11 +107,10 @@ public class SeamCarver {
     }
 
     public void removeHorizontalSeam(int[] seam) {
-        currentPicture = SeamRemover.removeHorizontalSeam(picture(), seam);
+        picture = SeamRemover.removeHorizontalSeam(picture(), seam);
     } // remove horizontal seam from picture
 
     public void removeVerticalSeam(int[] seam) {
-        currentPicture = SeamRemover.removeVerticalSeam(picture(), seam);
+        picture = SeamRemover.removeVerticalSeam(picture(), seam);
     } // remove vertical seam from picture
-
 }
